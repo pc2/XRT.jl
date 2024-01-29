@@ -1,7 +1,7 @@
 module XRT
     using CxxWrap
     using Scratch
-    using Pkg
+    import ..Base: size
 
     libname() = "libxrtwrap.so"
 
@@ -11,25 +11,9 @@ module XRT
         @initcxx
     end
 
-    function set_arg(run::Run, index, val)
-        set_arg(run, index, val[], sizeof(val))
-    end
+    include("xrt_bo.jl")
+    include("xrt_kernel.jl")
+    include("custom_xclbin.jl")
 
-    function write!(bo::BO, data)
-        write(bo, Base.unsafe_convert(Ptr{Nothing}, data))
-    end
-
-    function write!(bo::BO, data::Array, length; offset=0)
-        val_size = sizeof(eltype(data))
-        write(bo, Base.unsafe_convert(Ptr{Nothing}, data), length * val_size, offset * val_size)
-    end
-
-    function read!(bo::BO, data)
-        read(bo, Base.unsafe_convert(Ptr{Nothing}, data))
-    end
-
-    function read!(bo::BO, data::Array, length; offset=0)
-        val_size = sizeof(eltype(data))
-        read(bo, Base.unsafe_convert(Ptr{Nothing}, data), length * val_size, offset * val_size)
-    end
+    export size, length, setindex!, getindex
 end

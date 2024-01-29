@@ -52,6 +52,10 @@ function length(b::BOArray)
     length(b.data)
 end
 
+function sync(b::BOArray, dir::xclBOSyncDirection)
+    sync(b.bo, dir)
+end
+
 function BOArray(device::Device, userdata::AbstractArray{T,N}, mem; flags::BOFlags=XRT_BO_FLAGS_NORMAL) where {T,N}
     if UInt64(pointer(userdata)) % 4096 != 0
         @warn "User buffer not aligned. Create aligned copy!"

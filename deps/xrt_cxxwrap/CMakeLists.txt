@@ -16,6 +16,6 @@ endif ()
 add_library(xrtwrap SHARED ${CMAKE_SOURCE_DIR}/src/xrtwrap.cpp)
 
 target_link_directories(xrtwrap PUBLIC $ENV{XILINX_XRT}/lib)
-target_link_libraries(xrtwrap PUBLIC xilinxopencl xrt_coreutil xrt_core JlCxx::cxxwrap_julia)
+target_link_libraries(xrtwrap PUBLIC xilinxopencl xrt_coreutil JlCxx::cxxwrap_julia)
 target_include_directories(xrtwrap PUBLIC $ENV{XILINX_XRT}/include)
 

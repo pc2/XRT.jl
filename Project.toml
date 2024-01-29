@@ -1,0 +1,10 @@
+name = "XRT"
+uuid = "4d396880-2e3f-4be1-8c36-e87777010d00"
+authors = ["Marius Meyer <mariusme@mail.upb.de>"]
+version = "0.1.0"
+
+[deps]
+CxxWrap = "1f15a43c-97ca-5a2a-ae31-89f07a497df4"
+Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+Scratch = "6c6a2e73-6563-6170-7368-637461726353"

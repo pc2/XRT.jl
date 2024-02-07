@@ -1,5 +1,5 @@
 using ArrayAllocators
-import ..Base: size, length, getindex, setindex!
+import ..Base: size, length, getindex, setindex!, iterate
 
 function write!(bo::BO, data)
     write(bo, Base.unsafe_convert(Ptr{Nothing}, data))
@@ -27,7 +27,7 @@ BOArray(device::Device, userdata::AbstractArray{T,N}, mem; flags::BOFlags=XRT_BO
 BOArray{T,N}(device::Device, size, mem; flags::BOFlags=XRT_BO_FLAGS_NORMAL)
 
 """
-mutable struct BOArray{T,N}
+mutable struct BOArray{T,N} <: BO
     bo::BO
     data::Array{T,N}
 end
@@ -52,8 +52,18 @@ function length(b::BOArray)
     length(b.data)
 end
 
-function sync(b::BOArray, dir::xclBOSyncDirection)
-    sync(b.bo, dir)
+function convert(::Type{BO}, boa::BOArray)
+    boa.bo
+end
+
+iterate(b::BOArray) = iterate(b, 1)
+
+function iterate(b::BOArray, state)
+   if state <= length(b) 
+        (b.data[state], state+1)
+   else
+        nothing
+   end
 end
 
 function BOArray(device::Device, userdata::AbstractArray{T,N}, mem; flags::BOFlags=XRT_BO_FLAGS_NORMAL) where {T,N}

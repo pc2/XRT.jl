@@ -30,14 +30,14 @@ dummy = XRT.Kernel(d, uuid, "dummyKernel")
 # group_id
 a = Array{UInt8}(MemAlign(4096),1)
 xa = XRT.BOArray(d, a, group_id(dummy, 0))
-sync(xa, XRT.XCL_BO_SYNC_BO_TO_DEVICE)
+sync!(xa, XRT.XCL_BO_SYNC_BO_TO_DEVICE)
 
 # Execute kernel
-r = XRT.Run(dummy, xa, UInt8(1), Int(1))
+r = XRT.Run(dummy, xa, UInt8(1), 1)
 # Wait kernel to complete execution
 wait(r)
 # Read back and validate output data
-sync(xa, XRT.XCL_BO_SYNC_BO_FROM_DEVICE)
+sync!(xa, XRT.XCL_BO_SYNC_BO_FROM_DEVICE)
 @assert all(xa .== UInt8(1))
 ```
 

@@ -1,7 +1,7 @@
 module XRT
     using CxxWrap
     using Scratch
-    import ..Base: size
+    import ..Base: size, length, read, convert, wait
 
     libname() = "libxrtwrap.so"
 
@@ -15,5 +15,6 @@ module XRT
     include("xrt_kernel.jl")
     include("custom_xclbin.jl")
 
-    export size, length, setindex!, getindex
+    export size, length, setindex!, getindex, convert, wait
+    export sync!, group_id, set_arg!, start, stop, load_xclbin!
 end

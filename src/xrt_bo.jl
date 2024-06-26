@@ -27,7 +27,7 @@ BOArray(device::Device, userdata::AbstractArray{T,N}, mem; flags::BOFlags=XRT_BO
 BOArray{T,N}(device::Device, size, mem; flags::BOFlags=XRT_BO_FLAGS_NORMAL)
 
 """
-mutable struct BOArray{T,N} <: BO
+mutable struct BOArray{T,N}
     bo::BO
     data::Array{T,N}
 end
@@ -50,6 +50,10 @@ end
 
 function length(b::BOArray)
     length(b.data)
+end
+
+function sync!(b::BOArray, direction::xclBOSyncDirection)
+    XRT.sync!(b.bo, direction)
 end
 
 function convert(::Type{BO}, boa::BOArray)

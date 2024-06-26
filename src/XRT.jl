@@ -14,7 +14,9 @@ module XRT
     include("xrt_bo.jl")
     include("xrt_kernel.jl")
     include("custom_xclbin.jl")
+    include("hl_execution.jl")
 
     export size, length, setindex!, getindex, convert, wait
     export sync!, group_id, set_arg!, start, stop, load_xclbin!
+    export prepare_bitstream
 end

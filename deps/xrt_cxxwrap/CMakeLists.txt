@@ -9,13 +9,13 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${JlCxx_location}")
 message(STATUS "Found JlCxx at ${JlCxx_location}")
 
 # XRT
-if (NOT EXISTS $ENV{XILINX_XRT})
+if (NOT EXISTS ${XILINX_XRT})
   message(FATAL_ERROR "Xilinx XRT not found, make sure to source setup.sh")
 endif ()
 
 add_library(xrtwrap SHARED ${CMAKE_SOURCE_DIR}/src/xrtwrap.cpp)
 
-target_link_directories(xrtwrap PUBLIC $ENV{XILINX_XRT}/lib)
+target_link_directories(xrtwrap PUBLIC ${XILINX_XRT}/lib)
 target_link_libraries(xrtwrap PUBLIC xilinxopencl xrt_coreutil JlCxx::cxxwrap_julia)
-target_include_directories(xrtwrap PUBLIC $ENV{XILINX_XRT}/include)
+target_include_directories(xrtwrap PUBLIC ${XILINX_XRT}/include)
 

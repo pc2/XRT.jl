@@ -4,12 +4,6 @@
 C++ API to allow kernel scheduling via XRT directly from Julia code.
 [CxxWrap.jl](https://github.com/JuliaInterop/CxxWrap.jl) is used to wrap the C++ library.
 
-## WIP
-
-Currently, the wrapper does not contain the whole API!
-It is possible to get a device, create kernels, custom IPs and XRT buffers, and execute
-kernels. However, this should be sufficient for most tasks.
-
 ## Example
 
 This example executes a kernel on the FPGA that takes one buffer as output and
@@ -67,21 +61,37 @@ sync!(xa, XRT.XCL_BO_SYNC_BO_FROM_DEVICE)
 
 The package is in a very early stage and not added to the official regestries,
 yet.
-To still use XRT.jl in an project, it can still be added by using the GitHub URL 
+The easiest way to install XRT.jl and its dependencies is to add the XRT_Registry to your Julia depot:
 
-    pkg> add https://github.com/Mellich/XRT.jl
+```Julia
+using Pkg
+pkg"registry add https://github.com/Mellich/XRT_Registry.jl.git"
+```
 
-The following dependencies have to be installed:
+After that, XRT.jl can be isntalled as usual by calling:
+
+```Julia
+using Pkg
+pkg"add XRT"
+```
+The following dependencies have to be installed to use XRT.jl:
 
 - A C++ Compiler
 - CMake +3.5
-- XRT with the native C++ interface +2.14
+- Xilinx Vitis for features like software or hardware emulation
+
+XRT is contained in the `xrt_jll` package in version 2.17.
+If a native installation of XRT should be used, set the `XILINX_XRT` environment variable to the path of the local installation.
+XRT with the native C++ interface +2.14 are supported.
 
 Example for Noctua 2:
 
-The following modules have to be loaded to use XRT.jl:
+The following modules have to be loaded to use XRT.jl with the native XRT installation:
 
     module load lang JuliaHPC fpga xilinx/xrt devel CMake
 
+or to use the build-in instalation:
+
+    module load lang JuliaHPC fpga xilinx/vitis/24.1 devel CMake
 
 

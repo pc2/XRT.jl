@@ -1,0 +1,9 @@
+# Changelog
+
+## v0.1.1
+
+- Provide build-in XRT libraries using BinaryBuilder.jl
+
+## v0.1.0
+
+- Initial version

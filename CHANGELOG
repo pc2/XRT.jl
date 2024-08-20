@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.2
+
+- Add ! to the names of generated functions of prepare_bitstream
+
 ## v0.1.1
 
 - Provide build-in XRT libraries using BinaryBuilder.jl

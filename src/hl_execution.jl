@@ -27,7 +27,7 @@ function prepare_bitstream(path::String; device::XRT.Device=XRT.Device(1))
             arg_ids = [parse(Int, a["id"]) for a in $(jk["arguments"])]
 
             """
-            $($(jk["name"]))($($(join([a["name"] for a in jk["arguments"]],", "))))
+            $($(jk["name"]))!($($(join([a["name"] for a in jk["arguments"]],", "))))
 
             Execute a kernel on the FPGA using the provided arguments and HLS data types:
 
@@ -35,7 +35,7 @@ function prepare_bitstream(path::String; device::XRT.Device=XRT.Device(1))
 
             The provided data types are C data types. Matching Julia data types have to be used as inputs!
             """
-            function $(Symbol(jk["name"]))(args...)
+            function $(Symbol(jk["name"] * "!"))(args...)
                 final_args = []
 
                 kernel = XRT.Kernel($($device), $($uuid), $(String(jk["name"])), XRT.XRT_KERNEL_ACCESS_EXCLUSIVE)

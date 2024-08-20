@@ -11,13 +11,14 @@ two scalar values as input:
 
 ```Julia
 using XRT
+using ArrayAllocators
 
 # Allocate an output array
 a = Array{UInt8}(MemAlign(4096),1)
 
 # Load the bitstream to the FPGA and generate functions 
 # for each kernel
-bs = XRT.prepeare_bitstream("communication_PCIE.xclbin")
+bs = XRT.prepare_bitstream("communication_PCIE.xclbin")
 
 # execute the dummyKernel kernel
 bs.dummyKernel!(a, UInt8(1),1)

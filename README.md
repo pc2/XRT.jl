@@ -1,13 +1,16 @@
 # Julia Wrapper for the XRT native C++ API
 
-[XRT](https://www.xilinx.com/products/design-tools/vitis/xrt.html#overview) comes with native APIs for C++, C, Python and OpenCL. This wrapper targets the
-C++ API to allow kernel scheduling via XRT directly from Julia code.
+[XRT](https://www.xilinx.com/products/design-tools/vitis/xrt.html#overview) is a runtime for Xilinx AI Engines and FPGA platforms. It comes with native APIs for C++, C, Python and OpenCL. This wrapper targets the
+C++ API to allow kernel scheduling, bitstream analysis, and more via XRT directly from Julia code.
 [CxxWrap.jl](https://github.com/JuliaInterop/CxxWrap.jl) is used to wrap the C++ library.
 
 ## Example
 
 This example executes a kernel on the FPGA that takes one buffer as output and
-two scalar values as input:
+two scalar values as input.
+The `prepare_bitstream` function can be used to generate Julia functions for all kernels implemented in the bitstream by parsing its meta data.
+Buffer synchronization is handled automatically by XRT.jl.
+An example code for the execution of a kernel `dummyKernel` in the bitstream is given below:
 
 ```Julia
 using XRT
@@ -26,10 +29,6 @@ bs.dummyKernel!(a, UInt8(1),1)
 # validate the execution results
 @assert all(a .== UInt8(1))
 ```
-
-This code uses the automatic kernel function generation of XRT.jl. It is an easy way to execute kernel from Julia with only a few lines of code.
-It will automatically synchronize the input and output buffers to the FPGA, so the results will be present in the provided arrays after execution.
-
 The same execution can also be written on a lower level with direct control over buffer synchronization:
 
 ```Julia
@@ -60,7 +59,7 @@ sync!(xa, XRT.XCL_BO_SYNC_BO_FROM_DEVICE)
 
 ## Using the Package
 
-The package is in a very early stage and not added to the official regestries,
+The package is in a very early stage and not added to the official registries,
 yet.
 The easiest way to install XRT.jl and its dependencies is to add the XRT_Registry to your Julia depot:
 
@@ -69,7 +68,7 @@ using Pkg
 pkg"registry add https://github.com/Mellich/XRT_Registry.jl.git"
 ```
 
-After that, XRT.jl can be isntalled as usual by calling:
+After that, XRT.jl can be installed as usual by calling:
 
 ```Julia
 using Pkg

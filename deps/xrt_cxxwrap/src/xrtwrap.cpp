@@ -1,10 +1,20 @@
 #include "experimental/xrt_ip.h"
+#include "experimental/xrt_system.h"
 #include "jlcxx/jlcxx.hpp"
+#include "version.h"
 #include "xrt/xrt_bo.h"
 #include "xrt/xrt_device.h"
 #include "xrt/xrt_kernel.h"
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
+    if (XRT_MAJOR(XRT_VERSION_CODE) < 2 || XRT_MINOR(XRT_VERSION_CODE) < 14) {
+        throw std::runtime_error(
+            std::string(
+                "Minimum supported XRT version is 2.14. Found version: ") +
+            xrt_build_version);
+    }
+    mod.set_const("XRT_VERSION_MAJOR", XRT_MAJOR(XRT_VERSION_CODE));
+    mod.set_const("XRT_VERSION_MINOR", XRT_MINOR(XRT_VERSION_CODE));
     mod.add_type<xrt::autostart>("Autostart");
     mod.add_type<xrt::uuid>("UUID");
     // Device
@@ -15,7 +25,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
                 static_cast<xrt::uuid (xrt::device::*)(const std::string&)>(
                     &xrt::device::load_xclbin))
         //.method("load_xclbin", static_cast<xrt::uuid (xrt::device::*)(const
-        //xrt::xclbin&)>(&xrt::device::load_xclbin))
+        // xrt::xclbin&)>(&xrt::device::load_xclbin))
         .method("get_xclbin_uuid", &xrt::device::get_xclbin_uuid);
 
     // Sync direction enum
@@ -143,4 +153,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
                 static_cast<void (xrt::run::*)(int, const void*, size_t)>(
                     &xrt::run::set_arg))
         .method("state", &xrt::run::state);
+
+    // System
+    mod.method("enumerate_devices", &xrt::system::enumerate_devices);
 }

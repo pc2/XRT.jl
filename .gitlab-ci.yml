@@ -2,7 +2,7 @@ stages:
   - test
   - documentation
 variables:
-  SCHEDULER_PARAMETERS: "-n 1 -t 00:15:00 -A hpc-prf-cifi -p normal"
+  SCHEDULER_PARAMETERS: "-n 8 -t 00:15:00 -A hpc-prf-cifi -p normal"
   JULIA_MOD: "lang/JuliaHPC/1.10.4-foss-2022a-CUDA-11.7.0"
   XRT_MOD: "xilinx/xrt/2.16"
   CI: "yes"

@@ -13,20 +13,17 @@ default:
   tags:
     - slurm
   before_script:
-    - module load devel CMake
+    - module load $JULIA_MOD devel CMake
 
 test_with_native:
   stage: test
   script:
-    - /bin/bash -l
-    - module load $JULIA_MOD fpga $XRT_MOD
+    - module load fpga $XRT_MOD CMake
     - julia --color=yes --project=. -e 'using Pkg; Pkg.build(verbose=true); Pkg.test(; coverage = false);'
 
 test_with_buildin:
   stage: test
   script:
-    - /bin/bash -l
-    - module load $JULIA_MOD
     - julia --color=yes --project=. -e 'using Pkg; Pkg.build(verbose=true); Pkg.test(; coverage = false);'
 
 
@@ -39,8 +36,6 @@ build-and-deploy:
     - tags
     - external_pull_requests
   script:
-    - /bin/bash -l
-    - module load $JULIA_MOD
     - cd docs
     - julia --color=yes build_docs.jl
   allow_failure: false

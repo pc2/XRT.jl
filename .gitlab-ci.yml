@@ -4,19 +4,31 @@ stages:
 variables:
   SCHEDULER_PARAMETERS: "-n 1 -t 00:15:00 -A hpc-prf-cifi -p normal"
   JULIA_MOD: "lang/JuliaHPC/1.10.4-foss-2022a-CUDA-11.7.0"
+  XRT_MOD: "xilinx/xrt/2.16"
+  CI: "yes"
 default:
   id_tokens:
     CI_JOB_JWT:
       aud: https://git.uni-paderborn.de
   tags:
     - slurm
+  before_script:
+    - module load devel CMake
 
-basic_tests:
+test_with_native:
+  stage: test
+  script:
+    - /bin/bash -l
+    - module load $JULIA_MOD fpga $XRT_MOD
+    - julia --color=yes --project=. -e 'using Pkg; Pkg.build(verbose=true); Pkg.test(; coverage = false);'
+
+test_with_buildin:
   stage: test
   script:
     - /bin/bash -l
     - module load $JULIA_MOD
     - julia --color=yes --project=. -e 'using Pkg; Pkg.build(verbose=true); Pkg.test(; coverage = false);'
+
 
 # Documentation
 build-and-deploy:

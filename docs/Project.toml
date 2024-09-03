@@ -1,0 +1,9 @@
+[deps]
+DocThemePC2 = "891028e3-bd96-440d-a0ed-4cea5ae68e00"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
+
+[compat]
+DocThemePC2 = "0.1"
+Documenter = "0.27"
+DocumenterTools = "0.1"

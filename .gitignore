@@ -1,2 +1,3 @@
 deps/build_xrt_cxxwrap
+docs/build
 *.log

@@ -59,21 +59,13 @@ sync!(xa, XRT.XCL_BO_SYNC_BO_FROM_DEVICE)
 
 ## Using the Package
 
-The package is in a very early stage and not added to the official registries,
-yet.
-The easiest way to install XRT.jl and its dependencies is to add the XRT_Registry to your Julia depot:
+The package is not in the official repositories. It can be istalled via
 
 ```Julia
 using Pkg
-pkg"registry add https://github.com/Mellich/XRT_Registry.jl.git"
+Pkg.add("https://github.com/pc2/XRT.jl.git")
 ```
 
-After that, XRT.jl can be installed as usual by calling:
-
-```Julia
-using Pkg
-pkg"add XRT"
-```
 The following dependencies have to be installed to use XRT.jl:
 
 - A C++ Compiler

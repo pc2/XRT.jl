@@ -21,8 +21,9 @@ message(STATUS "Use UUID libraries in ${LIB_UUID_DIR}")
 
 add_library(xrtwrap SHARED ${CMAKE_SOURCE_DIR}/src/xrtwrap.cpp)
 
-target_link_directories(xrtwrap PUBLIC ${XILINX_XRT}/lib ${LIB_UUID_DIR}/lib)
-target_link_libraries(xrtwrap PUBLIC xilinxopencl xrt_coreutil JlCxx::cxxwrap_julia)
-target_include_directories(xrtwrap PUBLIC ${XILINX_XRT}/include ${LIB_UUID_DIR}/include)
+target_link_directories(xrtwrap PRIVATE ${XILINX_XRT}/lib ${LIB_UUID_DIR}/lib)
+set_property(TARGET xrtwrap PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(xrtwrap PRIVATE JlCxx::cxxwrap_julia uuid xrt_coreutil)
+target_include_directories(xrtwrap PRIVATE ${XILINX_XRT}/include ${LIB_UUID_DIR}/include)
 
 install(TARGETS xrtwrap DESTINATION lib)

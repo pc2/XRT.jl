@@ -25,6 +25,7 @@ test_with_native:
 test_with_buildin:
   stage: test
   script:
+    - module load fpga xilinx/vitis/2024.1
     - export XCL_EMULATION_MODE=sw_emu
     - julia --color=yes --project=. -e 'using Pkg; Pkg.build(verbose=true); Pkg.test(; coverage = false);'
 

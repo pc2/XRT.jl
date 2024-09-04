@@ -19,11 +19,13 @@ test_with_native:
   stage: test
   script:
     - module load fpga $XRT_MOD CMake
+    - export XCL_EMULATION_MODE=sw_emu
     - julia --color=yes --project=. -e 'using Pkg; Pkg.build(verbose=true); Pkg.test(; coverage = false);'
 
 test_with_buildin:
   stage: test
   script:
+    - export XCL_EMULATION_MODE=sw_emu
     - julia --color=yes --project=. -e 'using Pkg; Pkg.build(verbose=true); Pkg.test(; coverage = false);'
 
 

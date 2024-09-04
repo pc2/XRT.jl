@@ -5,7 +5,7 @@ using ArrayAllocators
 d = XRT.Device(0)
 
 b = XRT.BO(d, 2000, 0)
-@test typeof(b) == XRT.BOAllocated
+@test typeof(b) == XRT.XRTWrap.BOAllocated
 
 localbuf = rand(100)
 @test_warn "User buffer not aligned. Create aligned copy!" XRT.BOArray(d, localbuf, 0)

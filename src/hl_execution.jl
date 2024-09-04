@@ -38,7 +38,7 @@ function prepare_bitstream(path::String; device::XRT.Device=XRT.Device(1))
             function $(Symbol(jk["name"] * "!"))(args...)
                 final_args = []
 
-                kernel = XRT.Kernel($($device), $($uuid), $(String(jk["name"])), XRT.XRT_KERNEL_ACCESS_EXCLUSIVE)
+                kernel = XRT.Kernel($($device), $($uuid), $(String(jk["name"])))
                 for (a, v, i) in zip(args, arg_vector, arg_ids)
                     if v
                         bo_array =  XRT.BOArray($($(device)), a, XRT.group_id(kernel, i))

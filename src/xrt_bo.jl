@@ -1,6 +1,6 @@
 using ArrayAllocators
 import ..Base: size, length, getindex, setindex!, iterate
-using .XRTWrap: BO, length, address, get_memory_group, get_flags, async!, sync!, map, read, write!, copy
+using .XRTWrap: BO, length, address, get_memory_group, get_flags, async!, sync!, map, read, write!, copy, XCL_BO_SYNC_BO_FROM_DEVICE, XCL_BO_SYNC_BO_TO_DEVICE
 import XRT: write!, sync!
 
 function write!(bo::BO, data)
@@ -25,8 +25,8 @@ end
 Array data type usable with XRT. Can be used like BO but supports indexing and automatic
 alignment of host buffers.
 
-BOArray(device::Device, userdata::AbstractArray{T,N}, mem; flags::BOFlags=XRT_BO_FLAGS_NORMAL)
-BOArray{T,N}(device::Device, size, mem; flags::BOFlags=XRT_BO_FLAGS_NORMAL)
+BOArray(device::Device, userdata::AbstractArray{T,N}, mem; flags::XRTWrap.BOFlags=XRTWrap.XRT_BO_FLAGS_NORMAL)
+BOArray{T,N}(device::Device, size, mem; flags::XRTWrap.BOFlags=XRTWrap.XRT_BO_FLAGS_NORMAL)
 
 """
 mutable struct BOArray{T,N}
@@ -72,7 +72,7 @@ function iterate(b::BOArray, state)
    end
 end
 
-function BOArray(device::Device, userdata::AbstractArray{T,N}, mem; flags::XRTWrap.BOFlags=XRT_BO_FLAGS_NORMAL) where {T,N}
+function BOArray(device::Device, userdata::AbstractArray{T,N}, mem; flags::XRTWrap.BOFlags=XRTWrap.XRT_BO_FLAGS_NORMAL) where {T,N}
     if UInt64(pointer(userdata)) % 4096 != 0
         @warn "User buffer not aligned. Create aligned copy!"
         aligned_buffer = Array{T,N}(MemAlign(4096), size(userdata))
@@ -84,7 +84,7 @@ function BOArray(device::Device, userdata::AbstractArray{T,N}, mem; flags::XRTWr
     BOArray(bo, aligned_buffer)
 end
 
-function BOArray{T,N}(device::Device, size, mem; flags::XRTWrap.BOFlags=XRT_BO_FLAGS_NORMAL) where {T,N}
+function BOArray{T,N}(device::Device, size, mem; flags::XRTWrap.BOFlags=XRTWrap.XRT_BO_FLAGS_NORMAL) where {T,N}
     aligned_buffer = Array{T,N}(MemAlign(4096), size)
     bo = BO(device, Base.unsafe_convert(Ptr{Nothing}, aligned_buffer), length(aligned_buffer) * sizeof(eltype(aligned_buffer)), mem, flags)
     BOArray(bo, aligned_buffer)

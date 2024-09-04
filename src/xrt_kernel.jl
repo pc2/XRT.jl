@@ -1,7 +1,7 @@
-using .XRTWrap: Kernel, Run, BO, group_id, offset, get_name
-
+using .XRTWrap: Kernel, Run, BO, group_id, offset, get_name, set_arg!, wait, start, XRT_KERNEL_ACCESS_SHARED, XRT_KERNEL_ACCESS_EXCLUSIVE, XRT_KERNEL_ACCESS_NONE
+import XRT: set_arg!, wait
 function Kernel(device::Device, uuid::UUID, name::String)
-    Kernel(device, uuid, name, XRTWrap.XRT_KERNEL_ACCESS_SHARED)
+    Kernel(device, uuid, name, XRT_KERNEL_ACCESS_SHARED)
 end
 
 function Run(kernel::Kernel, arg1, args...; autostart=true)

@@ -28,8 +28,9 @@ test_with_buildin:
     - module load fpga xilinx/vitis/24.1
     - export XCL_EMULATION_MODE=sw_emu
     - julia --color=yes --project=. -e 'using Pkg; Pkg.build(verbose=true); Pkg.test(; coverage = false);'
+  allow_failure: false
 
-test_example_buildin:
+test_example_native:
   stage: test
   script:
     - module load fpga $XRT_MOD

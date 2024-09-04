@@ -1,3 +1,8 @@
 deps/build_xrt_cxxwrap
+examples/stream/build_sw_emu
+examples/stream/build_hw_emu
+examples/stream/build_hw
 docs/build
 *.log
+.run
+

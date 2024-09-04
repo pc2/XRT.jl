@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Minor changes in method names (adding ! to some methods because they change their input parameters)
 - Move wrapped API to XRTWrap submodule to support easier extension of core functionality
 - Use CMake module instead of OS cmake, full CMake workflow including install, add uuid link library
 

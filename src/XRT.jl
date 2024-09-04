@@ -4,10 +4,17 @@ module XRTWrap
 
 using CxxWrap
 using Scratch
-using xrt_jll
 using Logging
 import ..Base: size, length, read, convert, wait
 
+
+if !("XILINX_XRT" in keys(ENV))
+    @info "Use xrt_jll XRT libraries"
+    using xrt_jll
+    ENV["XILINX_XRT"] = xrt_jll.artifact_dir
+else
+    @info "Use native XRT libraries in $(ENV["XILINX_XRT"])"
+end
 
 libname() = "libxrtwrap.so"
 
@@ -15,12 +22,7 @@ libname() = "libxrtwrap.so"
 
 function __init__()
     @initcxx
-    if !("XILINX_XRT" in keys(ENV))
-        @info "Use xrt_jll XRT libraries"
-        ENV["XILINX_XRT"] = xrt_jll.artifact_dir
-    else
-        @info "Use native XRT libraries in $(ENV["XILINX_XRT"])"
-    end
+
 end
 
 end

@@ -2,6 +2,8 @@ using XRT
 using ArrayAllocators
 using Logging
 
+bitstream() = "build_sw_emu/stream.xclbin"
+
 array_size = 2^20
 
 if !("XCL_EMULATION_MODE" in keys(ENV))
@@ -24,7 +26,7 @@ end
 # Load the bitstream to the FPGA and generate functions 
 # for each kernel
 @info "Upload bitstream and generate kernel functions"
-bs = XRT.prepare_bitstream("build_sw_emu/stream.xclbin")
+bs = XRT.prepare_bitstream(bitstream())
 
 # execute the stream kernel
 @info "Execute kernel test run" 
@@ -35,7 +37,9 @@ c .= 0.0
 execution_time = @elapsed bs.stream_calc!(a, b, c, 2.0, array_size, 1)
 
 @info "Execution time: $execution_time seconds"
-@info "Measured bandwidth: $((3 * array_size * sizeof(eltype(a))) / execution_time * 1.0e-9) GB/s"
+total_data_moved_fpga = 3 * array_size * sizeof(eltype(a))
+total_data_moved_pcie = 6 * array_size * sizeof(eltype(a))
+@info "Measured bandwidth: $((total_data_moved_fpga + total_data_moved_pcie) / execution_time * 1.0e-9) GB/s"
 
 # validate the execution results
 @info "Validate output"

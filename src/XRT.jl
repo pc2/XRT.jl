@@ -1,5 +1,7 @@
 module XRT
 
+using DocStringExtensions
+
 module XRTWrap
 
 using CxxWrap

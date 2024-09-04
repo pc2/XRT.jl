@@ -1,7 +1,6 @@
 
 """
-
- prpeare_bitstream(path::String; device=XRT.Device(1))
+$(SIGNATURES)
 
  Load a bitstream to an FPGA and generate 
  interfaces for the included kernels.

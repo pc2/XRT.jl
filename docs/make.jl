@@ -19,6 +19,7 @@ makedocs(;
              "Examples" => [
                  "XRT API" => "examples/xrt_api.md",
                  "Auto-generate Kernel Interface" => "examples/high_level_basics.md",
+                 "STREAM TRIAD Example" => "examples/stream.md",
              ],
              "References" => [
                  "API" => "refs/api.md",

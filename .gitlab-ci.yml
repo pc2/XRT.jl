@@ -5,7 +5,7 @@ variables:
   SCHEDULER_PARAMETERS: "-n 8 -t 00:15:00 -A hpc-prf-cifi -p normal"
   JULIA_MOD: "lang/JuliaHPC/1.10.4-foss-2022a-CUDA-11.7.0"
   XRT_MOD: "xilinx/xrt/2.16"
-  CI: "yes"
+  CI: "true"
 default:
   id_tokens:
     CI_JOB_JWT:
@@ -28,7 +28,7 @@ test_with_buildin:
     - module load fpga xilinx/vitis/24.1
     - export XCL_EMULATION_MODE=sw_emu
     - julia --color=yes --project=. -e 'using Pkg; Pkg.build(verbose=true); Pkg.test(; coverage = false);'
-  allow_failure: false
+  allow_failure: true
 
 test_example_native:
   stage: test
@@ -51,5 +51,6 @@ build-and-deploy:
     - external_pull_requests
   script:
     - cd docs
+    - julia --color=yes --project=. -e 'using Pkg; Pkg.add(url="https://github.com/pc2/DocThemePC2.jl.git"); Pkg.build(verbose=true);'
     - julia --color=yes build_docs.jl
   allow_failure: false

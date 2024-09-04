@@ -68,8 +68,6 @@ Pkg.add("https://github.com/pc2/XRT.jl.git")
 
 The following dependencies have to be installed to use XRT.jl:
 
-- A C++ Compiler
-- CMake +3.5
 - Xilinx Vitis for features like software or hardware emulation
 
 XRT is contained in the `xrt_jll` package in version 2.17.
@@ -80,10 +78,15 @@ Example for Noctua 2:
 
 The following modules have to be loaded to use XRT.jl with the native XRT installation:
 
-    module load lang JuliaHPC fpga xilinx/xrt devel CMake
+    module load lang JuliaHPC fpga xilinx/xrt
 
 or to use the build-in instalation:
 
-    module load lang JuliaHPC fpga xilinx/vitis/24.1 devel CMake
+    module load lang JuliaHPC fpga xilinx/vitis/24.1
+
+
+# Known Issues
+
+- The build in XRT implementation is unable to find a device even when Vitis HLS is installed and the `XCL_EMULATION_MODE` variable is set
 
 

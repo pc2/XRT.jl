@@ -2,6 +2,8 @@
 #define BUFFER_SIZE 4096
 #define UNROLL_COUNT 8
 
+extern "C" {
+
 void stream_calc(const double *in1, const double *in2, double *out,
                  const double scalar, const unsigned int number_elements,
                  const unsigned int second_input) {
@@ -68,4 +70,5 @@ void stream_calc(const double *in1, const double *in2, double *out,
             }
         }
     }
+}
 }

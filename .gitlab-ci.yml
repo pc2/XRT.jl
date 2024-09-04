@@ -13,12 +13,12 @@ default:
   tags:
     - slurm
   before_script:
-    - module load $JULIA_MOD devel CMake
+    - module load $JULIA_MOD
 
 test_with_native:
   stage: test
   script:
-    - module load fpga $XRT_MOD CMake
+    - module load fpga $XRT_MOD
     - export XCL_EMULATION_MODE=sw_emu
     - julia --color=yes --project=. -e 'using Pkg; Pkg.build(verbose=true); Pkg.test(; coverage = false);'
 

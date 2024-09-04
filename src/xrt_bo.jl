@@ -13,12 +13,12 @@ function write!(bo::BO, data::Array, length; offset=0)
 end
 
 function read!(bo::BO, data)
-    read(bo, Base.unsafe_convert(Ptr{Nothing}, data))
+    read!(bo, Base.unsafe_convert(Ptr{Nothing}, data))
 end
 
 function read!(bo::BO, data::Array, length; offset=0)
     val_size = sizeof(eltype(data))
-    read(bo, Base.unsafe_convert(Ptr{Nothing}, data), length * val_size, offset * val_size)
+    read!(bo, Base.unsafe_convert(Ptr{Nothing}, data), length * val_size, offset * val_size)
 end
 
 """

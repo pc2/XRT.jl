@@ -72,9 +72,9 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
         .method("sync!", static_cast<void (xrt::bo::*)(xclBOSyncDirection)>(
                              &xrt::bo::sync))
         .method("map", static_cast<void* (xrt::bo::*)()>(&xrt::bo::map))
-        .method("read", static_cast<void (xrt::bo::*)(void*, size_t, size_t)>(
-                            &xrt::bo::read))
-        .method("read", static_cast<void (xrt::bo::*)(void*)>(&xrt::bo::read))
+        .method("read!", static_cast<void (xrt::bo::*)(void*, size_t, size_t)>(
+                             &xrt::bo::read))
+        .method("read!", static_cast<void (xrt::bo::*)(void*)>(&xrt::bo::read))
         .method("write!",
                 static_cast<void (xrt::bo::*)(const void*, size_t, size_t)>(
                     &xrt::bo::write))

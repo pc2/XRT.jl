@@ -1,5 +1,7 @@
 module XRT
 
+module XRTWrap
+
 using CxxWrap
 using Scratch
 using xrt_jll
@@ -21,6 +23,9 @@ function __init__()
     end
 end
 
+end
+
+include("xrt_device.jl")
 include("xrt_bo.jl")
 include("xrt_kernel.jl")
 include("custom_xclbin.jl")

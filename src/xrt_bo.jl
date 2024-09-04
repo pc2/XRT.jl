@@ -1,5 +1,6 @@
 using ArrayAllocators
 import ..Base: size, length, getindex, setindex!, iterate
+using .XRTWrap: BO
 
 function write!(bo::BO, data)
     write(bo, Base.unsafe_convert(Ptr{Nothing}, data))
@@ -52,7 +53,7 @@ function length(b::BOArray)
     length(b.data)
 end
 
-function sync!(b::BOArray, direction::xclBOSyncDirection)
+function sync!(b::BOArray, direction::XRTWrap.xclBOSyncDirection)
     XRT.sync!(b.bo, direction)
 end
 
@@ -70,7 +71,7 @@ function iterate(b::BOArray, state)
    end
 end
 
-function BOArray(device::Device, userdata::AbstractArray{T,N}, mem; flags::BOFlags=XRT_BO_FLAGS_NORMAL) where {T,N}
+function BOArray(device::Device, userdata::AbstractArray{T,N}, mem; flags::XRTWrap.BOFlags=XRT_BO_FLAGS_NORMAL) where {T,N}
     if UInt64(pointer(userdata)) % 4096 != 0
         @warn "User buffer not aligned. Create aligned copy!"
         aligned_buffer = Array{T,N}(MemAlign(4096), size(userdata))
@@ -82,7 +83,7 @@ function BOArray(device::Device, userdata::AbstractArray{T,N}, mem; flags::BOFla
     BOArray(bo, aligned_buffer)
 end
 
-function BOArray{T,N}(device::Device, size, mem; flags::BOFlags=XRT_BO_FLAGS_NORMAL) where {T,N}
+function BOArray{T,N}(device::Device, size, mem; flags::XRTWrap.BOFlags=XRT_BO_FLAGS_NORMAL) where {T,N}
     aligned_buffer = Array{T,N}(MemAlign(4096), size)
     bo = BO(device, Base.unsafe_convert(Ptr{Nothing}, aligned_buffer), length(aligned_buffer) * sizeof(eltype(aligned_buffer)), mem, flags)
     BOArray(bo, aligned_buffer)

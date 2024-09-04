@@ -25,3 +25,4 @@ target_link_directories(xrtwrap PUBLIC ${XILINX_XRT}/lib ${LIB_UUID_DIR}/lib)
 target_link_libraries(xrtwrap PUBLIC xilinxopencl xrt_coreutil JlCxx::cxxwrap_julia)
 target_include_directories(xrtwrap PUBLIC ${XILINX_XRT}/include ${LIB_UUID_DIR}/include)
 
+install(TARGETS xrtwrap DESTINATION lib)

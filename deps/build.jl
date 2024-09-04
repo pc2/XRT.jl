@@ -4,9 +4,9 @@ using Scratch
 using xrt_jll
 using Logging
 using Libuuid_jll
+using CMake
 
 uuid = Base.UUID(Pkg.TOML.parsefile("../Project.toml")["uuid"])
-#@show keys(Pkg.TOML.parsefile(joinpath(dirname(@__DIR__), "../Project.toml")))
 build_dir() = "build_xrt_cxxwrap"
 
 if isdir(build_dir())
@@ -26,13 +26,13 @@ if "XILINX_XRT" in keys(ENV)
 else
     @info "Build using xrt_jll"
     push!(cmake_opts, "-DXILINX_XRT=$(xrt_jll.artifact_dir)")
+    ENV["XILINX_XRT"] = xrt_jll.artifact_dir 
     # xbutil_version = get_version(read(`$(xrt_jll.artifact_dir)/bin/xbutil --version`, String))
 end
 
+push!(cmake_opts, "-DCMAKE_INSTALL_PREFIX=$(get_scratch!(uuid, "xrtwrap"))")
+
 mkdir(build_dir())
-cd(build_dir())
-run(`cmake ../xrt_cxxwrap $cmake_opts -DCMAKE_PREFIX_PATH=$(CxxWrap.prefix_path())`)
-run(`make xrtwrap`)
-mv("libxrtwrap.so", joinpath(get_scratch!(uuid, "lib"), "libxrtwrap.so"), force=true)
-
-
+run(`$(CMake.cmake) -S xrt_cxxwrap -B $(build_dir()) $cmake_opts -DCMAKE_PREFIX_PATH=$(CxxWrap.prefix_path())`)
+run(`$(CMake.cmake) --build $(build_dir())`)
+run(`$(CMake.cmake) --install $(build_dir())`)

@@ -1,14 +1,15 @@
 using ArrayAllocators
 import ..Base: size, length, getindex, setindex!, iterate
-using .XRTWrap: BO
+using .XRTWrap: BO, length, address, get_memory_group, get_flags, async!, sync!, map, read, write!, copy
+import XRT: write!, sync!
 
 function write!(bo::BO, data)
-    write(bo, Base.unsafe_convert(Ptr{Nothing}, data))
+    write!(bo, Base.unsafe_convert(Ptr{Nothing}, data))
 end
 
 function write!(bo::BO, data::Array, length; offset=0)
     val_size = sizeof(eltype(data))
-    write(bo, Base.unsafe_convert(Ptr{Nothing}, data), length * val_size, offset * val_size)
+    write!(bo, Base.unsafe_convert(Ptr{Nothing}, data), length * val_size, offset * val_size)
 end
 
 function read!(bo::BO, data)

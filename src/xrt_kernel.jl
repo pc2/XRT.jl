@@ -1,5 +1,8 @@
-using .XRTWrap: Kernel, Run, BO
+using .XRTWrap: Kernel, Run, BO, group_id, offset, get_name
 
+function Kernel(device::Device, uuid::UUID, name::String)
+    Kernel(device, uuid, name, XRTWrap.XRT_KERNEL_ACCESS_SHARED)
+end
 
 function Run(kernel::Kernel, arg1, args...; autostart=true)
     k = Run(kernel)

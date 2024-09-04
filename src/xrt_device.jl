@@ -1,4 +1,5 @@
-using .XRTWrap: Device
+using .XRTWrap: Device, load_xclbin!, get_xclbin_uuid
+using .XRTWrap: UUID
 
 # TODO: Create a custom device struct to also 
 #       store device information and further 

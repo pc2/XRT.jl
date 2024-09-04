@@ -9,7 +9,7 @@ import ..Base: size, length, read, convert, wait
 
 libname() = "libxrtwrap.so"
 
-@wrapmodule(() -> joinpath(@get_scratch!("lib"), libname()))
+@wrapmodule(() -> joinpath(@get_scratch!("xrtwrap"),"lib", libname()))
 
 function __init__()
     @initcxx

@@ -26,7 +26,9 @@ function prepare_bitstream(path::String; device::XRT.Device=XRT.Device(1))
             arg_ids = [parse(Int, a["id"]) for a in $(jk["arguments"])]
 
             """
+            ```Julia
             $($(jk["name"]))!($($(join([a["name"] for a in jk["arguments"]],", "))))
+            ```
 
             Execute a kernel on the FPGA using the provided arguments and HLS data types:
 

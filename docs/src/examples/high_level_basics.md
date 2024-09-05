@@ -1,4 +1,4 @@
-# Auto-generated Kernel Interfaces
+# Example: Auto-generated Kernel Interfaces
 
 This example executes a kernel on the FPGA that takes one buffer as output and
 two scalar values as input.

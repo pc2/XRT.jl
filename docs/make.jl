@@ -15,7 +15,11 @@ makedocs(;
          checkdocs = :exports,
          # doctest = ci,
          pages = [
-             "XRT" => "index.md",
+             "XRT" => [
+                "Installation" => "index.md",
+                "XCLBIN Parsing" => "custom_xclbin.md",
+                "High Level Execution" => "high_level.md",
+             ],
              "Examples" => [
                  "XRT API" => "examples/xrt_api.md",
                  "Auto-generate Kernel Interface" => "examples/high_level_basics.md",

@@ -51,4 +51,4 @@ The output should look similar to this:
     Kernel Name: k2, CU Number: 1, Status: Shutdown
 
 Note, that the measured bandwidth is relatively low because software emulation is used.
-To execute the stream benchmark on hardware, the path to the bitstream has to be changed accordingly by updating the `bitstream()` function.
+To execute the stream benchmark on hardware, the path to the bitstream has to be changed accordingly in the `@prepare_bitstream` line.

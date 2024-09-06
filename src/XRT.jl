@@ -37,6 +37,6 @@ include("hl_execution.jl")
 
 export size, length, setindex!, getindex, convert, wait
 export sync!, group_id, set_arg!, start, stop, load_xclbin!
-export prepare_bitstream
+export @prepare_bitstream
 
 end

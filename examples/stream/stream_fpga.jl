@@ -25,16 +25,19 @@ end
 
 # Load the bitstream to the FPGA and generate functions 
 # for each kernel
-@info "Upload bitstream and generate kernel functions"
-bs = XRT.prepare_bitstream(bitstream())
+@info "Generate kernel functions"
+module STREAMBitstream
+    using XRT
+    @prepare_bitstream("build_sw_emu/stream.xclbin")
+end
 
 # execute the stream kernel
 @info "Execute kernel test run" 
-bs.stream_calc!(a, b, c, 2.0, 16, 1)
+STREAMBitstream.stream_calc!(a, b, c, 2.0, 16, 1)
 c .= 0.0
 
 @info "Execute full kernel run TRIAD" 
-execution_time = @elapsed bs.stream_calc!(a, b, c, 2.0, array_size, 1)
+execution_time = @elapsed STREAMBitstream.stream_calc!(a, b, c, 2.0, array_size, 1)
 
 @info "Execution time: $execution_time seconds"
 total_data_moved_fpga = 3 * array_size * sizeof(eltype(a))

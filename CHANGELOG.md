@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.1.4
+
 - Fix order of BO arguments in BOArray constructor which lead to allocation errors
 - Convert prepare_bitstream function to macro and fix signature generation
 - Minor changes in method names (adding ! to some methods because they change their input parameters)

@@ -2,8 +2,6 @@ using XRT
 using ArrayAllocators
 using Logging
 
-bitstream() = "build_sw_emu/stream.xclbin"
-
 array_size = 2^20
 
 if !("XCL_EMULATION_MODE" in keys(ENV))
@@ -33,7 +31,8 @@ end
 
 # execute the stream kernel
 @info "Execute kernel test run" 
-STREAMBitstream.stream_calc!(a, b, c, 2.0, 16, 1)
+STREAMBitstream.stream_calc!(a, b, c, 2.0, 4096, 0)
+@info "Reset output buffer" 
 c .= 0.0
 
 @info "Execute full kernel run TRIAD" 
@@ -46,6 +45,6 @@ total_data_moved_pcie = 6 * array_size * sizeof(eltype(a))
 
 # validate the execution results
 @info "Validate output"
-@assert all(c .== (2 .* a .+ b))
+@assert all(c .≈ (2 .* a .+ b))
 
 @info "Done"

@@ -79,7 +79,7 @@ function BOArray(device::Device, userdata::AbstractArray{T,N}, mem; flags::XRTWr
     else
         aligned_buffer = userdata
     end
-    bo = BO(device, Base.unsafe_convert(Ptr{Nothing}, aligned_buffer), length(aligned_buffer) * sizeof(eltype(aligned_buffer)), mem, flags)
+    bo = BO(device, Base.unsafe_convert(Ptr{Nothing}, aligned_buffer), sizeof(aligned_buffer), flags, mem)
     BOArray(bo, aligned_buffer)
 end
 
@@ -91,7 +91,7 @@ alignment of host buffers.
 """
 function BOArray{T,N}(device::Device, size, mem; flags::XRTWrap.BOFlags=XRTWrap.XRT_BO_FLAGS_NORMAL) where {T,N}
     aligned_buffer = Array{T,N}(MemAlign(4096), size)
-    bo = BO(device, Base.unsafe_convert(Ptr{Nothing}, aligned_buffer), length(aligned_buffer) * sizeof(eltype(aligned_buffer)), mem, flags)
+    bo = BO(device, Base.unsafe_convert(Ptr{Nothing}, aligned_buffer), length(aligned_buffer) * sizeof(eltype(aligned_buffer)), flags, mem)
     BOArray(bo, aligned_buffer)
 end
 

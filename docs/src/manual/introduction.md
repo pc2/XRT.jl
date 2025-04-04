@@ -9,5 +9,5 @@ The following documentation is intended to provide users with an insight and a g
 
 ```@contents
 Pages = ["introduction.md", "installation.md", "devices.md", "xclbin.md", "kernel.md", "boarray.md", "high-level.md", "tools.md", "misc.md", "testing.md", "troubleshooting.md"]
-Depth = 1:2
+Depth = 2
 ```

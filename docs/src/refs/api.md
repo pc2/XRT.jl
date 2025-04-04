@@ -7,7 +7,7 @@ Some functions, which are directly wrapped from the native C++ API, might not be
 
 ```@contents
 Pages = ["api.md"]
-Depth = 2:3
+Depth = 3
 ```
 
 ## Index

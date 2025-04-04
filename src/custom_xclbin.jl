@@ -1,6 +1,5 @@
-using LazyJSON
-
-@enum SectionType::Int begin
+module SectionType
+@enum Type::Int begin
     BITSTREAM = 0
     CLEARING_BITSTREAM = 1
     EMBEDDED_METADATA = 2
@@ -37,6 +36,8 @@ using LazyJSON
     IP_METADATA = 33
 end
 
+end # SectionType
+
 function get_meta(data)
     start_meta = last(findfirst("XCLBIN_MIRROR_DATA_START", data)) + 1
     end_meta = first(findfirst("XCLBIN_MIRROR_DATA_END", data)) - 1
@@ -44,11 +45,11 @@ function get_meta(data)
 end
 
 """
-    get_section_string(xclbin_path::String, type::SectionType)
+$(TYPEDSIGNATURES)
 
-Get the specified raw section from the bitstream file xclbin_path.
+Get the specified raw section from the bitstream file `xclbin_path`.
 """
-function get_section_string(xclbin_path::String, type::SectionType)
+function get_section_string(xclbin_path::String, type::SectionType.Type)
     data = read(xclbin_path, String)
     meta = get_meta(data)
     for (k, v) in meta
@@ -62,21 +63,21 @@ function get_section_string(xclbin_path::String, type::SectionType)
 end
 
 """
-    get_kernel_info(xclbin_path::String)
+$(TYPEDSIGNATURES)
 
-Get information about contained kernels, instances, arguments and their register offsets...
+Get information about contained kernels, instances, arguments and their register offsets as a `LazyJSON` object.
 """
 function get_kernel_info(xclbin_path::String)
-    data = LazyJSON.parse(get_section_string(xclbin_path, BUILD_METADATA))
+    data = LazyJSON.parse(get_section_string(xclbin_path, SectionType.BUILD_METADATA))
     data["build_metadata"]["xclbin"]["user_regions"][1]["kernels"]
 end
 
 """
-    get_system_info(xclbin_path::String)
+$(TYPEDSIGNATURES)
 
-Get information about resource utilization and connectivity
+Get information about resource utilization and connectivity as a `LazyJSON` object.
 """
 function get_system_info(xclbin_path::String)
-    data = LazyJSON.parse(get_section_string(xclbin_path, SYSTEM_METADATA))
+    data = LazyJSON.parse(get_section_string(xclbin_path, SectionType.SYSTEM_METADATA))
     data["system_diagram_metadata"]["xclbin"]["user_regions"]
 end

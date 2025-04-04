@@ -1,32 +1,50 @@
 using Test
 using XRT
 using ArrayAllocators
+using LazyJSON
+using Logging
 
-d = XRT.Device(0)
+include("utilities.jl")
 
-b = XRT.BO(d, 2000, 0)
-@test typeof(b) == XRT.XRTWrap.BOAllocated
+if "--help" in ARGS
+    println("""
+        Usage: runtests.jl [--help] [--quick] [--verbose]
 
-localbuf = rand(100)
-@test_warn "User buffer not aligned. Create aligned copy!" XRT.BOArray(d, localbuf, 0)
-b2 = XRT.BOArray(d, localbuf, 0)
-@test typeof(b2) == XRT.BOArray{Float64, 1}
+               --help             Show this text.
+               --quick            Skip long tests.
+               --verbose          Print more information during testing.""")
+    exit(0)
+end
 
-alignedbuf = Array{Float64}(MemAlign(4096), 100, 100)
-alignedbuf .= rand(size(alignedbuf))
-b3 = XRT.BOArray(d, alignedbuf, 0)
-@test typeof(b3) == XRT.BOArray{Float64, 2}
-@test length(b3) == 10000
-@test size(b3) == (100,100)
+const quick = "--quick" in ARGS
+const verbose = "--verbose" in ARGS
 
+@testset verbose=verbose "XRT.jl" begin
 
-@test b3[1] == alignedbuf[1]
+    if XRT.emulation_mode() == XRT.XRTWrap.TargetType.hw
+        @devices_testset 1 "Xbutil" begin
+            include("xbutil.jl")
+        end
+    end
+    
+    @devices_testset 1 "BOArray" begin
+        include("boarray.jl")
+    end
 
-alignedbuf[10] = 5.0
-@test b3[10] == 5.0
+    @testset "State" begin
+        include("state.jl")
+    end
 
-b3[15] = 2.5
-@test alignedbuf[15] == 2.5
+    @testset "Device" begin
+        include("device.jl")
+    end
 
+    @xclbin_testset "Xclbin" begin
+        include("xclbin.jl")
+    end
 
+    @devices_testset 1 "Stream Example" begin
+        include("stream.jl")
+    end
 
+end

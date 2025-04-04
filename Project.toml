@@ -1,7 +1,7 @@
 name = "XRT"
 uuid = "4d396880-2e3f-4be1-8c36-e87777010d00"
-authors = ["Marius Meyer <marius.meyer@uni-paderborn.de>"]
-version = "0.1.4"
+authors = ["Marius Meyer <marius.meyer@uni-paderborn.de>", "Lukas Tobias Müller <lukastm@mail.uni-paderborn.de>"]
+version = "0.2.0"
 
 [deps]
 ArrayAllocators = "c9d4266f-a5cb-439d-837c-c97b191379f5"
@@ -16,6 +16,10 @@ Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 Scratch = "6c6a2e73-6563-6170-7368-637461726353"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 xrt_jll = "bb401bc5-fb22-5674-bf0e-333823e8805f"
+PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
+boost_jll = "28df3c45-c428-5900-9ff8-a3135698ca75"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+PkgVersion = "eebad327-c553-4316-9ea0-9fa01ccd7688"
 
 [compat]
 ArrayAllocators = "0.3"
@@ -26,5 +30,9 @@ LazyJSON = "0.2"
 Libuuid_jll = "2"
 Pkg = "1"
 Scratch = "1"
-julia = "1.6"
+julia = "1.7"
 xrt_jll = "2"
+PrettyTables = "2.3.2"
+boost_jll = "1.79.0"
+Reexport = "1.2.2"
+PkgVersion = "0.3.3"

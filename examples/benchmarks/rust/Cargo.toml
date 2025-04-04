@@ -1,0 +1,11 @@
+[package]
+name = "rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+xrt = { git = "https://github.com/papeg/xrt-rs.git"}
+
+[[bin]]
+name = "communication_pcie"
+path = "src/communication_pcie.rs"

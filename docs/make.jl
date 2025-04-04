@@ -10,28 +10,40 @@ DocThemePC2.install(@__DIR__)
 @info "Generating Documenter.jl site"
 makedocs(;
          sitename = "XRT.jl",
-         authors = "Marius Meyer",
+         authors = "Marius Meyer, Lukas Tobias Müller",
          modules = [XRT],
          checkdocs = :exports,
          # doctest = ci,
          pages = [
-             "XRT" => [
-                "Installation" => "index.md",
-                "XCLBIN Parsing" => "custom_xclbin.md",
-                "High Level Execution" => "high_level.md",
+             "Home" => "index.md",
+             "Manual" => [
+                "Introduction" => "manual/introduction.md",
+                "Installation" => "manual/installation.md",
+                "Devices" => "manual/devices.md",
+                "XCLBIN" => "manual/xclbin.md",
+                "Kernels And IPs" => "manual/kernel.md",
+                "Buffer Objects" => "manual/boarray.md" ,
+                "High-Level Execution" => "manual/high_level.md",
+                "Command-Line Tools" => "manual/tools.md",
+                "Miscellaneous" => "manual/misc.md",
+                "Testing" => "manual/testing.md",
+                "Troubleshooting" => "manual/troubleshooting.md"
              ],
              "Examples" => [
                  "XRT API" => "examples/xrt_api.md",
+                 "Automatic Buffer Synchronization" => "examples/synchronization.md",
                  "Auto-generate Kernel Interface" => "examples/high_level_basics.md",
-                 "STREAM TRIAD Example" => "examples/stream.md",
+                 "STREAM TRIAD Example" => "examples/stream.md"
              ],
              "References" => [
-                 "API" => "refs/api.md",
+                 "XRT.jl Public API" => "refs/api.md",
+                 "Configuration File xrt.ini" => "refs/ini.md",
+                 "Module _XRTInternal" => "refs/internal.md"
              ],
+             "issues.md"
          ],
-         # assets = ["assets/custom.css", "assets/custom.js"]
          repo = "https://github.com/pc2/XRT.jl/blob/{commit}{path}#{line}",
-         format = Documenter.HTML(; collapselevel = 1))
+         format = Documenter.HTML(; assets = ["assets/favicon.ico"]))
 
 if ci
     @info "Deploying documentation to GitHub"

@@ -5,4 +5,5 @@ examples/stream/build_hw
 docs/build
 *.log
 .run
-
+src/.ipynb_checkpoints
+docs/src/assets/themes/

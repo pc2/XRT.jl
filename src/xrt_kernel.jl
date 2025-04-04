@@ -1,21 +1,53 @@
-using .XRTWrap: Kernel, Run, BO, group_id, offset, get_name, set_arg!, wait, start, XRT_KERNEL_ACCESS_SHARED, XRT_KERNEL_ACCESS_EXCLUSIVE, XRT_KERNEL_ACCESS_NONE
+using .XRTWrap: Kernel, Run, BO, group_id, offset, get_name, set_arg!, wait, start
+using .XRTWrap.ComputeUnitAccessMode: SHARED, EXCLUSIVE, NONE
 import XRT: set_arg!, wait
 
 """
-$(SIGNATURES)
+```Julia
+Kernel(uuid::XRT.XRTWrap.UUID, name::AbstractString; device::XilinxDevice=device())
+Kernel(uuid::XRT.XRTWrap.UUID, name::AbstractString, cus::Vararg{AbstractString}; device::XilinxDevice=device())
+Kernel(uuid::XRT.XRTWrap.UUID, kernel::XclbinKernel, cus::Vararg{XclbinIP}; device::XilinxDevice=device())
 
-Create a new kernel instance using a device, bitstream uuid, and kernel name.
+```
+
+Create a new kernel instance using a bitstream uuid and kernel name or [`XRT.XclbinKernel`](@ref) object.
+Optionally, the compute units to be executed can also be specified.
+To create the kernel on a device other than the current active device, use the `device` keyword parameter or set a wrapped device as first parameter.
 """
-function Kernel(device::Device, uuid::UUID, name::String)
-    Kernel(device, uuid, name, XRT_KERNEL_ACCESS_SHARED)
+function Kernel(device::XRTWrap.Device, uuid::UUID, name::AbstractString)
+    Kernel(device, uuid, name, SHARED)
+end
+
+function Kernel(uuid::UUID, name::AbstractString; device::XilinxDevice=device())
+    Kernel(device.device, uuid, name)
+end
+
+function Kernel(uuid::UUID, name::AbstractString, cus::Vararg{AbstractString}; device::XilinxDevice=device())
+    Kernel(device.device, uuid, "$(name):{$(join(cus, ","))}")
+end
+
+function Kernel(uuid::UUID, kernel::XclbinKernel, cus::Vararg{XclbinIP}; device::XilinxDevice=device())
+    name = kernel.name
+    cus_to_add = Vector{String}()
+    for cu in cus
+        if split(cu.name, ":")[1] == kernel.name
+            push!(cus_to_add, cu.cu_name)
+        end
+    end
+    
+    if length(cus_to_add) > 0
+        name *= ":{" * join(cus_to_add, ",") * "}"
+    end
+
+    Kernel(device.device, uuid, name)
 end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Execute a kernel with the given arguments.
 To automatically start the execution, set `autostart` to `true`.
-Otherwise, the execution has to be explicitly started by calling start(run::Run)
+Otherwise, the execution has to be explicitly started by calling `start(run::Run)`
 """
 function Run(kernel::Kernel, arg1, args...; autostart=true)
     k = Run(kernel)
@@ -29,7 +61,24 @@ function Run(kernel::Kernel, arg1, args...; autostart=true)
 end
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
+
+Execute a kernel with the given arguments and blocks until kernel execution completes.
+Returns used `XRT.Run` object.
+"""
+function call(kernel::Kernel, arg1, args...)
+    k = Run(kernel, arg1, args...)
+    wait(k)
+    k
+end
+
+"""
+```Julia
+set_arg!(run::XRT.XRTWrap.Run, index, val)
+set_arg!(run::XRT.XRTWrap.Run, index, val::XRT.AbstractBOArray)
+set_arg!(run::XRT.XRTWrap.Run, index, val::XRT.XRTWrap.BO)
+
+```
 
 Set the argument for a kernel at the given index.
 Note, that this is a thin wrapper to the C++ API,
@@ -40,35 +89,78 @@ function set_arg!(run::Run, index, val)
     set_arg!(run, index, Base.unsafe_convert(Ptr{Nothing},val_array), sizeof(eltype(val)))
 end
 
-"""
-$(SIGNATURES)
-
-Set the argument for a kernel at the given index to a given BO.
-Note, that this is a thin wrapper to the C++ API,
-so the indices start at 0!
-"""
 function set_arg!(run::Run, index, val::BO)
     adr = address(val)
     set_arg!(run, index, adr)
 end 
 
-"""
-$(SIGNATURES)
-
-Set the argument for a kernel at the given index to a given BOArray.
-Note, that this is a thin wrapper to the C++ API,
-so the indices start at 0!
-"""
-function set_arg!(run::Run, index, val::BOArray)
+function set_arg!(run::Run, index, val::AbstractBOArray)
     set_arg!(run, index, val.bo)
 end
 
-"""
-$(SIGNATURES)
+function set_arg!(run::Run, index, val::AbstractSyncDirectionWrapper)
+    set_arg!(run, index, val.object)
+end
 
-Wait for a given Run object to complete execution.
+"""
+$(TYPEDSIGNATURES)
+
+Sets multiple arguments for a kernel beginning at the first argument.
+A kernel argument remains untouched if the new arg at the index is `nothing`.
+"""
+function set_args!(run::Run, args...)
+    for (idx, a) in enumerate(args)
+        if a != nothing
+            set_arg!(run, i-1, a)
+        end
+    end
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Wait for a given [`Run`](@ref) object to complete execution.
 The method will return as soon as the execution is completed.
 """
 function wait(run::Run)
     wait(run, 0)
+end
+
+@doc """
+```Julia
+group_id(kernel::XRT.XRTWrap.Kernel, argno::Integer)
+
+```
+
+Get the memory bank group id to use when allocating buffers of an kernel argument.
+The kernel argument index starts at 0!
+""" group_id
+
+@doc """
+```Julia
+offset(kernel::XRT.XRTWrap.Kernel, argno::Integer)
+
+```
+
+Get the kernel register offset of kernel argument.
+The kernel argument index starts at 0!
+""" offset
+
+@doc """
+```Julia
+get_name(kernel::XRT.XRTWrap.Kernel)
+
+```
+
+Returns the name of the kernel
+""" get_name
+
+"""
+$(TYPEDSIGNATURES)
+
+Returns an [`XRT.Xclbin`](@ref) object containing the kernel.
+"""
+function get_xclbin(kernel::XRT.XRTWrap.Kernel)
+    xclbin = XRTWrap.get_xclbin(kernel)
+    XRT.Xclbin(xclbin, get_name(kernel))
 end

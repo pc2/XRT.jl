@@ -15,11 +15,9 @@ a = Array{Float64}(MemAlign(4096),array_size)
 b = Array{Float64}(MemAlign(4096),array_size)
 c = Array{Float64}(MemAlign(4096),array_size)
 
-for i in 1:array_size
-    a[i] = rand()
-    b[i] = rand()
-    c[i] = 0
-end
+a[:] .= rand(array_size)
+b[:] .= rand(array_size)
+c[:] .= 0
 
 # Load the bitstream to the FPGA and generate functions 
 # for each kernel

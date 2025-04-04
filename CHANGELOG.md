@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.2.1
+
 - Set depth argument to integer for Documenter.jl < v1.0.0
 
 ## v0.2.0

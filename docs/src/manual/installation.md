@@ -11,16 +11,16 @@ The following dependencies have to be installed to use XRT.jl:
 
 ## Package installation
 
-The package is not registered. It can be installed through the package manager and added to your Julia environment:
+The package can be installed through the package manager and added to your Julia environment:
 
 ```bash
-pkg> add https://github.com/pc2/XRT.jl.git
+pkg> add XRT
 ```
 
 Or using the Julia `Pkg` package:
 
 ```bash
-julia> using Pkg; Pkg.add(url="https://github.com/pc2/XRT.jl.git")
+julia> using Pkg; Pkg.add("XRT")
 ```
 
 Building the package can take some time, as the C++ library gets wrapped and a shared object file is generated during the building process.

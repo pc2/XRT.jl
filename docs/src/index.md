@@ -15,7 +15,7 @@ The XRT.jl package comes with a built-in installation of XRT 2.17 using the [`xr
 ```Julia
 # install the package
 using Pkg
-Pkg.add(url="https://github.com/pc2/XRT.jl.git")
+Pkg.add("XRT")
 ```
 
 Various tests can be performed to ensure the functionality of the package.

@@ -23,10 +23,10 @@ It is therefore recommended to use a native XRT installation.
 To do so, the environment variable `XILINX_XRT` must be set to the path of the local installation.
 XRT with the native C++ interface +2.14 is supported.
 
-XRT.jl is not in the official repositories. It can be installed via
+XRT.jl can be installed via the Julia package manager:
 
 ```
-] add https://github.com/pc2/XRT.jl.git
+] add XRT
 ```
 
 ### Usage on HPC cluster

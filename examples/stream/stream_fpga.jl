@@ -29,12 +29,12 @@ end
 
 # execute the stream kernel
 @info "Execute kernel test run" 
-STREAMBitstream.stream_calc!(a, b, c, 2.0, 4096, 0)
+STREAMBitstream.stream_calc!(a, b, c, 2.0, UInt32(4096), UInt32(0))
 @info "Reset output buffer" 
 c .= 0.0
 
 @info "Execute full kernel run TRIAD" 
-execution_time = @elapsed STREAMBitstream.stream_calc!(a, b, c, 2.0, array_size, 1)
+execution_time = @elapsed STREAMBitstream.stream_calc!(a, b, c, 2.0, UInt32(array_size), UInt32(1))
 
 @info "Execution time: $execution_time seconds"
 total_data_moved_fpga = 3 * array_size * sizeof(eltype(a))

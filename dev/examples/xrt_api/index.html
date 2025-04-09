@@ -1,28 +1,86 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>XRT API · XRT.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">XRT.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><input class="collapse-toggle" id="menuitem-1" type="checkbox"/><label class="tocitem" for="menuitem-1"><span class="docs-label">XRT</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../">Installation</a></li><li><a class="tocitem" href="../../custom_xclbin/">XCLBIN Parsing</a></li><li><a class="tocitem" href="../../high_level/">High Level Execution</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox" checked/><label class="tocitem" for="menuitem-2"><span class="docs-label">Examples</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>XRT API</a></li><li><a class="tocitem" href="../high_level_basics/">Auto-generate Kernel Interface</a></li><li><a class="tocitem" href="../stream/">STREAM TRIAD Example</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">References</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../refs/api/">API</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>XRT API</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>XRT API</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/pc2/XRT.jl/blob/main/docs/src/examples/xrt_api.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Wrapper-for-native-XRT-C-API"><a class="docs-heading-anchor" href="#Wrapper-for-native-XRT-C-API">Wrapper for native XRT C++ API</a><a id="Wrapper-for-native-XRT-C-API-1"></a><a class="docs-heading-anchor-permalink" href="#Wrapper-for-native-XRT-C-API" title="Permalink"></a></h1><p>This module consists of a thin wrapper around the <a href="https://xilinx.github.io/XRT/master/html/xrt_native_apis.html">XRT native C++ API</a>. Assume we have a synthesized bitstream with the following kernel:</p><pre><code class="language-C hljs">void dummyKernel(char* a, char validate, int count) {
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>XRT API · XRT.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.svg" alt="XRT.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">XRT.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Manual</span><ul><li><a class="tocitem" href="../../manual/introduction/">Introduction</a></li><li><a class="tocitem" href="../../manual/installation/">Installation</a></li><li><a class="tocitem" href="../../manual/devices/">Devices</a></li><li><a class="tocitem" href="../../manual/xclbin/">XCLBIN</a></li><li><a class="tocitem" href="../../manual/kernel/">Kernels And IPs</a></li><li><a class="tocitem" href="../../manual/boarray/">Buffer Objects</a></li><li><a class="tocitem" href="../../manual/high_level/">High-Level Execution</a></li><li><a class="tocitem" href="../../manual/tools/">Command-Line Tools</a></li><li><a class="tocitem" href="../../manual/misc/">Miscellaneous</a></li><li><a class="tocitem" href="../../manual/testing/">Testing</a></li><li><a class="tocitem" href="../../manual/troubleshooting/">Troubleshooting</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li class="is-active"><a class="tocitem" href>XRT API</a><ul class="internal"><li><a class="tocitem" href="#Automatic-use-of-the-active-device"><span>Automatic use of the active device</span></a></li><li><a class="tocitem" href="#Automatic-buffer-synchronization"><span>Automatic buffer synchronization</span></a></li><li><a class="tocitem" href="#Make-it-Type-Safe"><span>Make it Type-Safe</span></a></li></ul></li><li><a class="tocitem" href="../synchronization/">Automatic Buffer Synchronization</a></li><li><a class="tocitem" href="../high_level_basics/">Auto-generate Kernel Interface</a></li><li><a class="tocitem" href="../stream/">STREAM TRIAD Example</a></li></ul></li><li><span class="tocitem">References</span><ul><li><a class="tocitem" href="../../refs/api/">XRT.jl Public API</a></li><li><a class="tocitem" href="../../refs/ini/">Configuration File xrt.ini</a></li><li><a class="tocitem" href="../../refs/internal/">Module _XRTInternal</a></li></ul></li><li><a class="tocitem" href="../../issues/">Known Issues</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>XRT API</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>XRT API</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/pc2/XRT.jl/blob/main/docs/src/examples/xrt_api.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Example:-Wrapper-for-native-XRT-C-API"><a class="docs-heading-anchor" href="#Example:-Wrapper-for-native-XRT-C-API">Example: Wrapper for native XRT C++ API</a><a id="Example:-Wrapper-for-native-XRT-C-API-1"></a><a class="docs-heading-anchor-permalink" href="#Example:-Wrapper-for-native-XRT-C-API" title="Permalink"></a></h1><p>This module consists of a thin wrapper around the <a href="https://xilinx.github.io/XRT/master/html/xrt_native_apis.html">XRT native C++ API</a>. Assume we have a synthesized bitstream with the following kernel:</p><pre><code class="language-C hljs">void dummyKernel(char* a, char validate, int count) {
     for (int i=0; i&lt;count; i++) {
         a[i] = validate;
     }
-}</code></pre><p>The kernel can be executed as follows:</p><pre><code class="language-Julia hljs">using XRT
-using ArrayAllocators
-# Get a FPGA device
-d = XRT.Device(&quot;0000:a1:00.1&quot;)
+}</code></pre><p>The kernel can be executed as follows using the one-to-one wrapped functions from the native C++ API:</p><pre><code class="language-Julia hljs">using XRT
+# Get a FPGA device by index
+d = XRT.XRTWrap.Device(1)
 # Load the Bitstream on the device
-uuid = load_xclbin!(d, &quot;communication_PCIE.xclbin&quot;)
+uuid = load_xclbin!(d, &quot;path/to/communication_PCIE.xclbin&quot;)
 # Create a kernel instance for a kernel in the loaded bitstream
 dummy = XRT.Kernel(d, uuid, &quot;dummyKernel&quot;)
 
 # Create device buffer and write data to buffer
-# Use the memory bank of the selected kernel instance by calling
-# group_id
-a = Array{UInt8}(MemAlign(4096),1)
+# Use the memory bank of the selected kernel instance by calling group_id
+a = Array{UInt8}(MemAlign(4096), 1)
 xa = XRT.BOArray(d, a, group_id(dummy, 0))
-sync!(xa, XRT.XCL_BO_SYNC_BO_TO_DEVICE)
+sync!(xa, XRT.TO_DEVICE)
 
 # Execute kernel
 r = XRT.Run(dummy, xa, UInt8(1), 1)
 # Wait kernel to complete execution
 wait(r)
 # Read back and validate output data
-sync!(xa, XRT.XCL_BO_SYNC_BO_FROM_DEVICE)
-@assert all(xa .== UInt8(1))</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../high_level/">« High Level Execution</a><a class="docs-footer-nextpage" href="../high_level_basics/">Auto-generate Kernel Interface »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Friday 6 September 2024 18:55">Friday 6 September 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+sync!(xa, XRT.FROM_DEVICE)
+@assert all(xa .== UInt8(1))</code></pre><p><strong>Note: Indexing of devices using the wrapped <code>XRT.XRTWrap.Device</code> constructor starts at 0!</strong></p><h2 id="Automatic-use-of-the-active-device"><a class="docs-heading-anchor" href="#Automatic-use-of-the-active-device">Automatic use of the active device</a><a id="Automatic-use-of-the-active-device-1"></a><a class="docs-heading-anchor-permalink" href="#Automatic-use-of-the-active-device" title="Permalink"></a></h2><p>To make this execution procedure a little more convenient, the device set globally as active can be used. At first, it must be set at the beginning. If no device has been set, the first device detected by XRT.jl is implicitly used. In the following example the kernel will be executed on the same device as in the previous example. The function uses a Julia-typical count starting at 1:</p><pre><code class="language-Julia hljs">using XRT
+# Globally set an active FPGA device
+XRT.device!(2)
+
+# Load the Bitstream on the device
+uuid = load_xclbin!(&quot;path/to/communication_PCIE.xclbin&quot;)
+# Create a kernel instance for a kernel in the loaded bitstream
+dummy = XRT.Kernel(uuid, &quot;dummyKernel&quot;)
+
+# Create device buffer and write data to buffer
+# Use the memory bank of the selected kernel instance by calling group_id
+a = Array{UInt8}(MemAlign(4096), 1)
+xa = XRT.BOArray(a, group_id(dummy, 0))
+sync!(xa, XRT.TO_DEVICE)
+
+# Execute kernel
+r = XRT.Run(dummy, xa, UInt8(1), 1)
+# Wait kernel to complete execution
+wait(r)
+# Read back and validate output data
+sync!(xa, XRT.FROM_DEVICE)
+@assert all(xa .== UInt8(1))</code></pre><h2 id="Automatic-buffer-synchronization"><a class="docs-heading-anchor" href="#Automatic-buffer-synchronization">Automatic buffer synchronization</a><a id="Automatic-buffer-synchronization-1"></a><a class="docs-heading-anchor-permalink" href="#Automatic-buffer-synchronization" title="Permalink"></a></h2><p>To simplify this procedure even further, the synchronization of the buffer objects can be arranged automatically.</p><pre><code class="language-Julia hljs">using XRT
+# Globally set an active FPGA device
+XRT.device!(2)
+
+# Load the Bitstream on the device
+uuid = load_xclbin!(&quot;path/to/communication_PCIE.xclbin&quot;)
+# Create a kernel instance for a kernel in the loaded bitstream
+dummy = XRT.Kernel(uuid, &quot;dummyKernel&quot;)
+
+# Create device buffer and write data to buffer
+# Use the memory bank of the selected kernel instance by calling group_id
+a = Array{UInt8}(MemAlign(4096), 1)
+xa = XRT.BOArray(a, group_id(dummy, 0))
+
+# Execute kernel
+XRT.@sync_buffers XRT.Run(dummy, xa, UInt8(1), 1)
+
+# Validate output data
+@assert all(xa .== UInt8(1))</code></pre><h2 id="Make-it-Type-Safe"><a class="docs-heading-anchor" href="#Make-it-Type-Safe">Make it Type-Safe</a><a id="Make-it-Type-Safe-1"></a><a class="docs-heading-anchor-permalink" href="#Make-it-Type-Safe" title="Permalink"></a></h2><p>As another step the kernel loading process can be replaced. This does also create a type-safe Run function for the <code>dummyKernel</code>.</p><p><strong>Note: The macro was not executed in a separate module due to its compactness!</strong></p><pre><code class="language-Julia hljs">using XRT
+# Globally set an active FPGA device
+XRT.device!(2)
+
+# Loading the bitstream and generating kernel-adapted Run function
+dummy, _ = @prepare_run(&quot;path/to/communication_PCIE.xclbin&quot;, &quot;dummyKernel&quot;)
+
+# Create device buffer and write data to buffer
+# Use the memory bank of the selected kernel instance by calling group_id
+a = Array{UInt8}(MemAlign(4096), 1)
+xa = XRT.BOArray(a, group_id(dummy, 0))
+
+# Execute kernel
+XRT.@sync_buffers Run_dummyKernel(xa, UInt8(1), Int32(1))
+
+# Validate output data
+@assert all(xa .== UInt8(1))</code></pre><p>As one can see, <code>UInt32(1)</code> is required as the execution without this cast throws the following exception:</p><pre><code class="language-Julia hljs">julia&gt; XRT.@sync_buffers Run_dummyKernel(xa, UInt8(1), 1)
+MethodError: no method matching Run_dummyKernel(::XRT.BOArray{UInt8, 1}, ::UInt8, ::UInt32)
+
+Closest candidates are:
+  Run_dummyKernel(::Union{XRT.AbstractBOArray{UInt8}, XRT.AbstractSyncDirectionWrapper}, ::UInt8, ::Int32; autostart)
+  ...</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../manual/troubleshooting/">« Troubleshooting</a><a class="docs-footer-nextpage" href="../synchronization/">Automatic Buffer Synchronization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Wednesday 9 April 2025 15:09">Wednesday 9 April 2025</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

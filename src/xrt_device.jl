@@ -189,7 +189,9 @@ The function returns the UUID of the xclbin.
 """
 function load_xclbin!(xclbin::Xclbin; device::XilinxDevice=device(), force::Bool=false)
     if force || xclbin.uuid != get_xclbin_uuid(; device)
-        XRTWrap.load_xclbin!(device.device, xclbin.path)
+        return XRTWrap.load_xclbin!(device.device, xclbin.path)
+    else
+        return xclbin.uuid
     end
 end
 

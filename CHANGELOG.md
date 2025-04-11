@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add typecasts to the stream_fpga example
+
 ## v0.2.1
 
 - Set depth argument to integer for Documenter.jl < v1.0.0

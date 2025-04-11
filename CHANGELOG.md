@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add typecasts to the stream_fpga example
+- Add check for UUID in `load_xclbin!`
 
 ## v0.2.1
 

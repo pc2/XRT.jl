@@ -1,6 +1,6 @@
-using .XRTWrap: load_xclbin!, get_xclbin_uuid
+using .XRTWrap: get_xclbin_uuid
 using .XRTWrap: UUID
-import XRT: load_xclbin!, get_xclbin_uuid
+import XRT: get_xclbin_uuid
 
 abstract type AbstractXilinxDeviceInformation end
 
@@ -172,23 +172,30 @@ end
 
 """
 ```Julia
-load_xclbin!(xclbin::XRT.Xclbin; device) -> XRT.UUID
-load_xclbin!(path::String; device) -> XRT.UUID
+load_xclbin!(xclbin::XRT.Xclbin; device, force) -> XRT.UUID
+load_xclbin!(path::String; device, force) -> XRT.UUID
 
 ```
 
-Loads an [`XRT.Xclbin`](@ref) object on the current active device.
-The target device can be changed by setting the `device` keyword parameter.
+Loads an [`XRT.Xclbin`](@ref) object on the current active device if it is not yet loaded onto it.
 The function returns the UUID of the xclbin.
 `XRT.program!` is an alias for `load_xclbin!`.
+
+**Keywords**
+
+**`device`** The target device can be changed by setting the `device` keyword parameter.
+
+**`force`** Forces the Xclbin to be loaded onto the device.
 """
-function load_xclbin!(xclbin::Xclbin; device::XilinxDevice=device())
-    load_xclbin!(device.device, xclbin.path)
+function load_xclbin!(xclbin::Xclbin; device::XilinxDevice=device(), force::Bool=false)
+    if force || xclbin.uuid != get_xclbin_uuid(; device)
+        XRTWrap.load_xclbin!(device.device, xclbin.path)
+    end
 end
 
-function load_xclbin!(path::String; device::XilinxDevice=device())
+function load_xclbin!(path::String; device::XilinxDevice=device(), force::Bool=false)
     xclbin = Xclbin(path)
-    load_xclbin!(xclbin; device=device)
+    load_xclbin!(xclbin; device=device, force)
 end
 
 """

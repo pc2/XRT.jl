@@ -191,7 +191,13 @@ function load_xclbin!(xclbin::Xclbin; device::XilinxDevice=device(), force::Bool
     if force || xclbin.uuid != get_xclbin_uuid(; device)
         return XRTWrap.load_xclbin!(device.device, xclbin.path)
     else
-        return xclbin.uuid
+        try 
+            # Check if kernel is usable. Necessary when restarting Julia instance.
+            XRT.Kernel(xclbin.uuid, xclbin.kernels[1].name)
+            return xclbin.uuid
+        catch e
+            return XRTWrap.load_xclbin!(device.device, xclbin.path)
+        end
     end
 end
 

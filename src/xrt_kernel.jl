@@ -14,19 +14,19 @@ Create a new kernel instance using a bitstream uuid and kernel name or [`XRT.Xcl
 Optionally, the compute units to be executed can also be specified.
 To create the kernel on a device other than the current active device, use the `device` keyword parameter or set a wrapped device as first parameter.
 """
-function Kernel(device::XRTWrap.Device, uuid::UUID, name::AbstractString)
-    Kernel(device, uuid, name, SHARED)
+function Kernel(device::XRTWrap.Device, uuid::UUID, name::AbstractString; cu_access_mode::XRTWrap.ComputeUnitAccessMode.Type=SHARED)
+    Kernel(device, uuid, name, cu_access_mode)
 end
 
-function Kernel(uuid::UUID, name::AbstractString; device::XilinxDevice=device())
-    Kernel(device.device, uuid, name)
+function Kernel(uuid::UUID, name::AbstractString; device::XilinxDevice=device(), cu_access_mode::XRTWrap.ComputeUnitAccessMode.Type=SHARED)
+    Kernel(device.device, uuid, name; cu_access_mode)
 end
 
-function Kernel(uuid::UUID, name::AbstractString, cus::Vararg{AbstractString}; device::XilinxDevice=device())
-    Kernel(device.device, uuid, "$(name):{$(join(cus, ","))}")
+function Kernel(uuid::UUID, name::AbstractString, cus::Vararg{AbstractString}; device::XilinxDevice=device(), cu_access_mode::XRTWrap.ComputeUnitAccessMode.Type=SHARED)
+    Kernel(device.device, uuid, "$(name):{$(join(cus, ","))}"; cu_access_mode)
 end
 
-function Kernel(uuid::UUID, kernel::XclbinKernel, cus::Vararg{XclbinIP}; device::XilinxDevice=device())
+function Kernel(uuid::UUID, kernel::XclbinKernel, cus::Vararg{XclbinIP}; device::XilinxDevice=device(), cu_access_mode::XRTWrap.ComputeUnitAccessMode.Type=SHARED)
     name = kernel.name
     cus_to_add = Vector{String}()
     for cu in cus
@@ -39,7 +39,7 @@ function Kernel(uuid::UUID, kernel::XclbinKernel, cus::Vararg{XclbinIP}; device:
         name *= ":{" * join(cus_to_add, ",") * "}"
     end
 
-    Kernel(device.device, uuid, name)
+    Kernel(device.device, uuid, name; cu_access_mode)
 end
 
 """

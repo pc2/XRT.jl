@@ -150,3 +150,5 @@ julia> xclbin_uuid = load_xclbin!(xclbin)
 
 The function returns the `UUID` of the Xclbin file.
 It is also possible to set the device manually using the `device` keyword argument.
+The loading process is skipped, when the Xclbin is already on the device by comparing the [`XRT.get_xclbin_uuid`](@ref) return value.
+However, it can be forced by setting the `force` keyword argument.

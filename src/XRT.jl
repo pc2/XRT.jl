@@ -279,7 +279,7 @@ function __init__()
 end
 
 export size, length, setindex!, getindex, wait
-export sync!, group_id, set_arg!, start, stop, load_xclbin!, get_xclbin_uuid
+export sync!, group_id, set_arg!, start, stop, load_xclbin!, get_xclbin_uuid, Xclbin
 export @prepare_bitstream, @prepare_run
 export ToDeviceArray, FromDeviceArray
 

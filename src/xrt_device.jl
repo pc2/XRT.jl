@@ -16,6 +16,8 @@ The fields return always the up-to-date values.
 
 **`index`** of the device as used by XRT.jl (starts at 1).
 
+**`xclbin_uuid`** is a pointer to the last Xclbin UUID loaded onto the device.
+
 **`bdf`** is the BDF for the device.
 
 **`interface_uuid`** is the UUID when device is programmed with 2RP shell.
@@ -69,6 +71,7 @@ Returns as a `LazyJSON` object.
 struct XilinxDevice
     device::XRTWrap.Device
     index::Integer
+    xclbin_uuid::Ref{XRTWrap.UUID}
 
     electrical::AbstractXilinxDeviceInformation
     thermal::AbstractXilinxDeviceInformation
@@ -90,7 +93,7 @@ struct XilinxDevice
     nodma::Bool
     offline::Bool
 
-    XilinxDevice(index::Integer) = new(XRTWrap.Device(index-1), index)
+    XilinxDevice(index::Integer) = new(XRTWrap.Device(index-1), index, Ref{XRTWrap.UUID}(XRTWrap.UUID()))
 end
 
 module _XRTDeviceInformation
@@ -188,16 +191,12 @@ The function returns the UUID of the xclbin.
 **`force`** Forces the Xclbin to be loaded onto the device.
 """
 function load_xclbin!(xclbin::Xclbin; device::XilinxDevice=device(), force::Bool=false)
-    if force || xclbin.uuid != get_xclbin_uuid(; device)
-        return XRTWrap.load_xclbin!(device.device, xclbin.path)
+    if force || xclbin.uuid != device.xclbin_uuid[]
+        uuid = XRTWrap.load_xclbin!(device.device, xclbin.path)
+        device.xclbin_uuid[] = uuid
+        return uuid;
     else
-        try 
-            # Check if kernel is usable. Necessary when restarting Julia instance.
-            XRT.Kernel(xclbin.uuid, xclbin.kernels[1].name)
-            return xclbin.uuid
-        catch e
-            return XRTWrap.load_xclbin!(device.device, xclbin.path)
-        end
+        return xclbin.uuid
     end
 end
 

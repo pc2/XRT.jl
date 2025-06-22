@@ -101,4 +101,4 @@ sync!(xa, XRT.FROM_DEVICE)
 
 ## Documentation
 
-More information on the installation, the usage of XRT.jl, and further examples can be found in the [documentation](https://pc2.github.io/XRT.jl).
+More information on the installation, the usage of XRT.jl, and further examples can be found in the [documentation](https://pc2.github.io/XRT.jl/dev).

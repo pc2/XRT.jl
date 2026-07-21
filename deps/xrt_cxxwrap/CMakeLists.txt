@@ -74,4 +74,9 @@ if (NOT WIN32)
   set_property(TARGET xrtwrap PROPERTY SUFFIX ".so.${XRT_VERSION_NUMBER}")
 endif ()
 
-install(TARGETS xrtwrap DESTINATION lib)
+# Split by artifact type so the Windows runtime DLL lands in bin (where the JLL
+# convention wants it) while the import lib stays in lib; the Linux .so stays in lib.
+install(TARGETS xrtwrap
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)

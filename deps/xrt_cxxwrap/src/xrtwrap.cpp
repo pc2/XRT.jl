@@ -6,7 +6,15 @@
 #include "experimental/xrt_message.h"
 #include "jlcxx/jlcxx.hpp"
 #include "jlcxx/stl.hpp"
-#include "version.h"
+// XRT >= 2.20 moved the version header from a bare `${XILINX_XRT}/include/version.h`
+// down to `${XILINX_XRT}/include/xrt/detail/version.h`. We can't branch on
+// XRT_VERSION_CODE here -- that macro is *defined by* this very header -- so probe
+// the layout with __has_include (both include roots are on the search path).
+#if __has_include("version.h")
+#include "version.h"          // XRT < 2.20 (flat include/ layout)
+#else
+#include "detail/version.h"   // XRT >= 2.20 (headers nested under include/xrt/)
+#endif
 #include "xrt/xrt_bo.h"
 #include "xrt/xrt_device.h"
 #include "xrt/xrt_kernel.h"

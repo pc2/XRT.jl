@@ -27,9 +27,20 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${LIB_BOOST_DIR}/lib")
 
 add_library(xrtwrap SHARED ${CMAKE_SOURCE_DIR}/src/xrtwrap.cpp)
 
+# XRT >= 2.20 relocated its public headers from ${XILINX_XRT}/include/{experimental,
+# version.h} down into ${XILINX_XRT}/include/xrt/. Keep the flat include root for
+# older XRT and add the nested one for newer XRT; the layout that doesn't exist for
+# a given XRT install just contributes nothing.
 target_include_directories(xrtwrap PRIVATE ${XILINX_XRT}/include ${LIB_UUID_DIR}/include ${LIB_BOOST_DIR}/include)
+if (EXISTS ${XILINX_XRT}/include/xrt)
+  target_include_directories(xrtwrap PRIVATE ${XILINX_XRT}/include/xrt)
+endif ()
 
+# Newer XRT packages install the runtime libraries under lib64 rather than lib.
 target_link_directories(xrtwrap PRIVATE ${XILINX_XRT}/lib ${LIB_UUID_DIR}/lib ${LIB_BOOST_DIR}/lib)
+if (EXISTS ${XILINX_XRT}/lib64)
+  target_link_directories(xrtwrap PRIVATE ${XILINX_XRT}/lib64)
+endif ()
 
 target_link_libraries(xrtwrap PRIVATE
   JlCxx::cxxwrap_julia

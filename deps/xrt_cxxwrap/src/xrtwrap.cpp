@@ -6,14 +6,21 @@
 #include "experimental/xrt_message.h"
 #include "jlcxx/jlcxx.hpp"
 #include "jlcxx/stl.hpp"
-// XRT >= 2.20 moved the version header from a bare `${XILINX_XRT}/include/version.h`
-// down to `${XILINX_XRT}/include/xrt/detail/version.h`. We can't branch on
-// XRT_VERSION_CODE here -- that macro is *defined by* this very header -- so probe
-// the layout with __has_include (both include roots are on the search path).
-#if __has_include("version.h")
-#include "version.h"          // XRT < 2.20 (flat include/ layout)
+// We need only XRT's version macros (XRT_VERSION_CODE / XRT_MAJOR / XRT_MINOR)
+// and the xrt_build_version string. Their home has shifted across releases:
+//   * XRT >= ~2.24: xrt/detail/version-slim.h. Prefer it -- the full version.h
+//     also pulls in a generated xrt/detail/version-git.h that XRT does NOT
+//     install, so including version.h there fails to compile.
+//   * XRT 2.20..2.23: xrt/detail/version.h (self-contained).
+//   * XRT < 2.20: a bare version.h in the flat include root.
+// We can't branch on XRT_VERSION_CODE (these headers define it), so probe the
+// layout with __has_include; every XRT include root is on the search path.
+#if __has_include("xrt/detail/version-slim.h")
+#include "xrt/detail/version-slim.h"
+#elif __has_include("version.h")
+#include "version.h"
 #else
-#include "detail/version.h"   // XRT >= 2.20 (headers nested under include/xrt/)
+#include "xrt/detail/version.h"
 #endif
 #include "xrt/xrt_bo.h"
 #include "xrt/xrt_device.h"

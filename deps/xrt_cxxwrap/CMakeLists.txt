@@ -50,8 +50,12 @@ if (EXISTS ${XILINX_XRT}/lib64)
   target_link_directories(xrtwrap PRIVATE ${XILINX_XRT}/lib64)
 endif ()
 
+# cxxwrap_julia_stl carries the jlcxx::stl wrappers (StlWrappers::instance et al.)
+# that jlcxx/stl.hpp uses to wrap std::deque etc. Linux shared libs resolve it
+# lazily at load time, but the Windows DLL link needs it named explicitly.
 target_link_libraries(xrtwrap PRIVATE
   JlCxx::cxxwrap_julia
+  JlCxx::cxxwrap_julia_stl
   xrt_coreutil
 )
 

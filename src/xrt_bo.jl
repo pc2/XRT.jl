@@ -1,5 +1,5 @@
 import ..Base: size, length, getindex, setindex!, iterate
-using .XRTWrap: BO, length, address, get_memory_group, get_flags, async!, sync!, map, read, write!, copy
+import .XRTWrap: BO, length, address, get_memory_group, get_flags, async!, sync!, map, read, write!, copy
 using .XRTWrap.BOSyncDirection: FROM_DEVICE, TO_DEVICE
 import XRT: write!, sync!, address, get_memory_group, get_flags
 

@@ -24,7 +24,7 @@ PkgVersion = "eebad327-c553-4316-9ea0-9fa01ccd7688"
 [compat]
 ArrayAllocators = "0.3"
 CMake = "1"
-CxxWrap = "0.16"
+CxxWrap = "0.17"
 DocStringExtensions = "0.9"
 LazyJSON = "0.2"
 Libuuid_jll = "2"

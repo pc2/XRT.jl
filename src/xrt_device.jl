@@ -1,6 +1,4 @@
-using .XRTWrap: get_xclbin_uuid
-using .XRTWrap: UUID
-import XRT: get_xclbin_uuid
+import .XRTWrap: UUID, get_xclbin_uuid
 
 abstract type AbstractXilinxDeviceInformation end
 

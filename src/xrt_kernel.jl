@@ -1,6 +1,5 @@
-using .XRTWrap: Kernel, Run, BO, group_id, offset, get_name, set_arg!, wait, start
+import .XRTWrap: Kernel, Run, BO, group_id, offset, get_name, set_arg!, wait, start
 using .XRTWrap.ComputeUnitAccessMode: SHARED, EXCLUSIVE, NONE
-import XRT: set_arg!, wait
 
 """
 ```Julia

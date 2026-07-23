@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixes in xrt_cxxwrap for XRT +2.20 and Windows
+
 ## v0.2.2
 
 - Add typecasts to the stream_fpga example

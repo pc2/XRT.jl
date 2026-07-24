@@ -22,7 +22,15 @@ get_version(version_output) = VersionNumber(match(r"Version\s+:\s+(\d+\.\d+\.\d+
 resolve_native(path) =
     isempty(path) || any(depot -> occursin(depot, path), DEPOT_PATH) ? nothing : path
 
-selected_xrt() = @load_preference("xrt_path", get(ENV, "XILINX_XRT", ""))
+# XILINX_XRT overrides the preference, so unsetting it goes back to whatever was chosen
+# with use_native_xrt.
+selected_xrt() = get(ENV, "XILINX_XRT") do
+    @load_preference("xrt_path", "")
+end
+
+# Mirrors the selection so that the precompilation cache tracks it. Julia keys the cache
+# on preferences but not on the environment, and this is never read to choose anything.
+const COMPILED_FOR = @load_preference("xrt_compiled_for", "")
 
 """
 Path of the native XRT installation in use, or `nothing` when `xrt_jll` is used.
@@ -236,18 +244,32 @@ end # LogLevel
 @wrapmodule(libpath, :define_module_xrtwrap)
 
 function __init__()
-    # A changed preference invalidates the cache on its own, but XILINX_XRT does not.
-    if resolve_native(selected_xrt()) != NATIVE_XRT
-        @warn "XILINX_XRT selects a different XRT than XRT.jl was precompiled against. Recompiling..."
-        Base.compilecache(Base.identify_package("XRT"))
-        @warn "Recompiling done. Please restart Julia to load the new version."
-        return
-    end
-
+    # Always initialize: the rest of the package calls into the C++ module either way,
+    # and skipping this leaves its function pointers null.
     try
         @initcxx
     catch ignore
         _functional[] = false
+    end
+
+    # Julia keys the precompilation cache on preferences but not on the environment, so
+    # record what XILINX_XRT selected: that invalidates the cache, and the next start
+    # rebuilds against it. Recompiling here instead would crash, the C++ module being
+    # loaded already.
+    current = resolve_native(selected_xrt())
+    if current != NATIVE_XRT
+        try
+            Preferences.set_preferences!(@__MODULE__,
+                                         "xrt_compiled_for" => something(current, "");
+                                         force=true)
+            @warn """XILINX_XRT has changed since XRT.jl was precompiled. Restart Julia to \
+                     rebuild against it."""
+        catch err
+            fix = current === nothing ? "XRT.use_jll_xrt()" : "XRT.use_native_xrt(\"$(current)\")"
+            @warn """XILINX_XRT has changed since XRT.jl was precompiled, and the \
+                     precompilation cache could not be invalidated. Run `$(fix)` and \
+                     restart Julia.""" exception = err
+        end
     end
 end
 

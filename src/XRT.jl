@@ -4,32 +4,39 @@ using Reexport
 using LazyJSON
 using DocStringExtensions
 using PkgVersion
+import Preferences
 
 @reexport using ArrayAllocators 
 
 module XRTWrap
 
 using CxxWrap
+using Preferences
 using Scratch
 using Logging
 import ..Base: size, length, read, convert, wait
 
 get_version(version_output) = VersionNumber(match(r"Version\s+:\s+(\d+\.\d+\.\d+)", version_output)[1])
 
+# An XILINX_XRT inside a depot is one we set ourselves for xrt_jll.
+resolve_native(path) =
+    isempty(path) || any(depot -> occursin(depot, path), DEPOT_PATH) ? nothing : path
+
+selected_xrt() = @load_preference("xrt_path", get(ENV, "XILINX_XRT", ""))
+
 """
-Path of a native XRT installation selected through `XILINX_XRT`, or `nothing` when the
-`xrt_jll` artifact is used. An `XILINX_XRT` inside a depot is one we set ourselves.
+Path of the native XRT installation in use, or `nothing` when `xrt_jll` is used.
+
+Chosen when XRT.jl is precompiled, from the `xrt_path` preference
+([`XRT.use_native_xrt`](@ref)) or the `XILINX_XRT` environment variable.
 """
-function native_xrt()
-    path = get(ENV, "XILINX_XRT", "")
-    isempty(path) && return nothing
-    any(depot -> occursin(depot, path), DEPOT_PATH) && return nothing
-    return path
-end
+const NATIVE_XRT = resolve_native(selected_xrt())
+
+native_xrt() = NATIVE_XRT
 
 # Loading these dlopens their XRT libraries, which would then satisfy libxrtwrap's
 # DT_NEEDED and shadow a native installation, so only load them when we use them.
-if native_xrt() === nothing
+@static if NATIVE_XRT === nothing
     import xrt_jll
     import xrt_cxxwrap_jll
 end
@@ -51,8 +58,9 @@ function libpath()
             startswith(basename(file), "libxrtwrap.") && return file
         end
     end
-    error("""XILINX_XRT points at a native XRT installation in $(native_xrt()), but no \
-             libxrtwrap has been built against it. Run `Pkg.build("XRT")`.""")
+    error("""No libxrtwrap has been built against the native XRT in $(NATIVE_XRT). Run \
+             `Pkg.build("XRT")`, or drop `xrt_path` from LocalPreferences.toml (and unset \
+             XILINX_XRT) to fall back to xrt_jll.""")
 end
 
 const _functional = Ref{Bool}(true)
@@ -234,9 +242,9 @@ function __init__()
         _functional[] = false
     end
 
-    # Which XRT we bound to was settled while precompiling; check before we set
-    # XILINX_XRT ourselves below, which would change the answer.
-    stale = (native_xrt() === nothing) != isdefined(@__MODULE__, :xrt_cxxwrap_jll)
+    # A changed preference invalidates the cache on its own, but XILINX_XRT does not, so
+    # compare before we set it ourselves below.
+    stale = resolve_native(selected_xrt()) != NATIVE_XRT
 
     if isdefined(@__MODULE__, :xrt_jll)
         # XRT locates its configuration and driver plugins relative to XILINX_XRT.
@@ -244,7 +252,7 @@ function __init__()
     end
 
     if stale
-        @warn "XRT.jl was precompiled against a different XRT than XILINX_XRT selects now. Recompiling..."
+        @warn "XILINX_XRT selects a different XRT than XRT.jl was precompiled against. Recompiling..."
         Base.compilecache(Base.identify_package("XRT"))
         @warn "Recompiling done. Please restart Julia to load the new version."
     end
@@ -297,6 +305,32 @@ function __init__()
         Maybe the installed XRT does not support features of the currently loaded libxrtwrap v$(shim_version) version.\n
         Calling an XRTWrap function causes the Julia kernel to crash.")
     end
+end
+
+"""
+$(SIGNATURES)
+
+Use the native XRT installation at `path` instead of the `xrt_jll` artifact.
+
+The choice is stored as a preference, so it survives restarts and invalidates the
+precompilation cache. Run `Pkg.build("XRT")` afterwards to build `libxrtwrap` against that
+installation, then restart Julia. Setting `XILINX_XRT` does the same thing for one session.
+"""
+function use_native_xrt(path::AbstractString)
+    isdir(path) || error("Not a directory: $(path)")
+    Preferences.set_preferences!(XRT, "xrt_path" => abspath(path); force=true)
+    @info """Selected the native XRT in $(abspath(path)). Run `Pkg.build("XRT")` to build \
+             libxrtwrap against it, then restart Julia."""
+end
+
+"""
+$(SIGNATURES)
+
+Use the `xrt_jll` artifact, undoing [`use_native_xrt`](@ref). Restart Julia afterwards.
+"""
+function use_jll_xrt()
+    Preferences.delete_preferences!(XRT, "xrt_path"; force=true)
+    @info "Selected the xrt_jll artifact. Restart Julia for it to take effect."
 end
 
 export size, length, setindex!, getindex, wait

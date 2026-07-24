@@ -6,7 +6,9 @@
 - Support Julia >= v1.12
 - Fixes BO allocation in tests failing
 - Load the prebuilt `libxrtwrap` from `xrt_cxxwrap_jll` instead of compiling it on
-  installation; `Pkg.build("XRT")` is now only needed for a native XRT installation
+  installation. A native XRT installation is still supported and takes precedence: select
+  it with `XRT.use_native_xrt(path)` or `XILINX_XRT`, and `Pkg.build("XRT")` then compiles
+  `libxrtwrap` against it as before
 - Support XRT >= 2.19, whose command-line tool is `xrt-smi` rather than `xbutil`
 - Tolerate devices that do not report a BDF or name, such as an NPU
 

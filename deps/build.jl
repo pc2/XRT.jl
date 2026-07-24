@@ -7,6 +7,7 @@ using Logging
 using Libuuid_jll
 using CMake
 using boost_jll
+import Preferences
 
 get_version(version_output) = VersionNumber(match(r"Version\s+:\s+(\d+\.\d+\.\d+)", version_output)[1])
 get_xrtjl_root() = abspath(joinpath(Base.find_package("XRT"), "../../"))
@@ -26,7 +27,8 @@ function xrt_version(xrt)
 end
 
 # Only a native XRT needs a locally built shim; xrt_cxxwrap_jll ships one for xrt_jll.
-native_xrt = get(ENV, "XILINX_XRT", "")
+# Keep this in step with XRTWrap.selected_xrt.
+native_xrt = Preferences.load_preference(uuid, "xrt_path", get(ENV, "XILINX_XRT", ""))
 if isempty(native_xrt) || any(depot -> occursin(depot, native_xrt), DEPOT_PATH)
     @info "XILINX_XRT does not point at a native XRT installation; using xrt_cxxwrap_jll"
 else

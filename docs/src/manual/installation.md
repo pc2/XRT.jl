@@ -61,6 +61,17 @@ Set the `XILINX_XRT` environment variable to the path of the local installation 
 export XILINX_XRT=/opt/software/FPGA/Xilinx/xrt/xrt_2.14
 ```
 
+Alternatively, record the choice as a preference so it persists across sessions without an
+environment variable:
+
+```Julia
+julia> using XRT; XRT.use_native_xrt("/opt/software/FPGA/Xilinx/xrt/xrt_2.14")
+```
+
+Either way, run `Pkg.build("XRT")` afterwards to compile `libxrtwrap` against that
+installation, then restart Julia. `XRT.use_jll_xrt()` switches back to the `xrt_jll`
+artifact.
+
 After loading the package, the currently set version and other set environment variables can be verified.
 
 ```Julia

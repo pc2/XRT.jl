@@ -18,7 +18,7 @@ import ..Base: size, length, read, convert, wait
 
 get_version(version_output) = VersionNumber(match(r"Version\s+:\s+(\d+\.\d+\.\d+)", version_output)[1])
 
-# An XILINX_XRT inside a depot is one we set ourselves for xrt_jll.
+# An XILINX_XRT pointing into a depot is the xrt_jll artifact, not a native installation.
 resolve_native(path) =
     isempty(path) || any(depot -> occursin(depot, path), DEPOT_PATH) ? nothing : path
 
@@ -236,25 +236,18 @@ end # LogLevel
 @wrapmodule(libpath, :define_module_xrtwrap)
 
 function __init__()
+    # A changed preference invalidates the cache on its own, but XILINX_XRT does not.
+    if resolve_native(selected_xrt()) != NATIVE_XRT
+        @warn "XILINX_XRT selects a different XRT than XRT.jl was precompiled against. Recompiling..."
+        Base.compilecache(Base.identify_package("XRT"))
+        @warn "Recompiling done. Please restart Julia to load the new version."
+        return
+    end
+
     try
         @initcxx
     catch ignore
         _functional[] = false
-    end
-
-    # A changed preference invalidates the cache on its own, but XILINX_XRT does not, so
-    # compare before we set it ourselves below.
-    stale = resolve_native(selected_xrt()) != NATIVE_XRT
-
-    if isdefined(@__MODULE__, :xrt_jll)
-        # XRT locates its configuration and driver plugins relative to XILINX_XRT.
-        ENV["XILINX_XRT"] = xrt_jll.artifact_dir
-    end
-
-    if stale
-        @warn "XILINX_XRT selects a different XRT than XRT.jl was precompiled against. Recompiling..."
-        Base.compilecache(Base.identify_package("XRT"))
-        @warn "Recompiling done. Please restart Julia to load the new version."
     end
 end
 

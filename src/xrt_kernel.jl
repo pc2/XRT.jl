@@ -1,4 +1,4 @@
-import .XRTWrap: Kernel, Run, BO, HwContext, group_id, offset, get_name, set_arg!, wait, start
+import .XRTWrap: Kernel, Run, BO, group_id, offset, get_name, set_arg!, wait, start
 using .XRTWrap.ComputeUnitAccessMode: SHARED, EXCLUSIVE, NONE
 
 """
@@ -12,7 +12,7 @@ Alveo cards. Pass the context to [`Kernel`](@ref) to address a kernel by name.
 """
 function hw_context(xclbin::Xclbin; device::XilinxDevice=device())
     uuid = XRTWrap.register_xclbin(device.device, xclbin.xclbin)
-    return HwContext(device.device, uuid), uuid
+    return XRTWrap.HwContext(device.device, uuid), uuid
 end
 
 """

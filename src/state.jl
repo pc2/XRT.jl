@@ -61,7 +61,7 @@ function versioninfo(io::IO=stdout)
         println(io, "--- An error occurred while loading XRT ---")
     end
     print(io, "Xilinx Runtime library $(XRT.XRTWrap.XRT_VERSION_MAJOR).$(XRT.XRTWrap.XRT_VERSION_MINOR), ")
-    if isdefined(XRTWrap, :xrt_jll)
+    if XRTWrap.native_xrt() === nothing
         println(io, "built-in installation")
     else
         println(io, "native installation")
@@ -71,7 +71,7 @@ function versioninfo(io::IO=stdout)
 
     println(io, "Julia packages:")
     println(io, "  XRT.jl: $(PkgVersion.Version(XRT))")
-    for name in [:xrt_jll]
+    for name in [:xrt_jll, :xrt_cxxwrap_jll]
         isdefined(XRTWrap, name) || continue
         mod = getfield(XRTWrap, name)
         println(io, "  $(name): $(PkgVersion.Version(mod))")
@@ -79,7 +79,7 @@ function versioninfo(io::IO=stdout)
     println(io)
 
     println(io, "Libraries:")
-    println(io, "  xrtwrap: $(XRT.XRTWrap.libname())")
+    println(io, "  xrtwrap: $(XRT.XRTWrap.libpath())")
     println(io, "  XRT:")
     println(io, "    $(replace(chomp(XRT.version()), "\n" => "\n    ", r"(\ )+:" => ":"))")
     println(io)

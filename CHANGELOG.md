@@ -5,6 +5,10 @@
 - Fixes in xrt_cxxwrap for XRT +2.20 and Windows
 - Support Julia >= v1.12
 - Fixes BO allocation in tests failing
+- Load the prebuilt `libxrtwrap` from `xrt_cxxwrap_jll` instead of compiling it on
+  installation; `Pkg.build("XRT")` is now only needed for a native XRT installation
+- Support XRT >= 2.19, whose command-line tool is `xrt-smi` rather than `xbutil`
+- Tolerate devices that do not report a BDF or name, such as an NPU
 
 ## v0.2.2
 

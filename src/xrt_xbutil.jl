@@ -76,7 +76,9 @@ function validate!(bdf::AbstractString, tests::Vararg{Union{XbutilTest.Type, Abs
 end
 
 function validate!(tests::Vararg{Union{XbutilTest.Type, AbstractString}}; device::XilinxDevice=device(), output=""::AbstractString)
-    validate!(device.bdf, tests...; output=output)
+    bdf = device.bdf
+    bdf === nothing && error("Device $(device.index) does not report a BDF")
+    validate!(bdf, tests...; output=output)
 end
 
 """
@@ -85,7 +87,7 @@ $(SIGNATURES)
 Simply report the version of XRT and its drivers by calling `xbutil --version`.
 """
 function version()
-    _XRTInternal.call_utility("xbutil", "--version")
+    _XRTInternal.call_utility("xbutil", "--version"; ignorestatus=true)
 end
 
 """
@@ -102,19 +104,27 @@ julia> d = XRT.XRTWrap.Device(0); d = nothing; GC.gc()
 ```
 """
 function reset!(index::Integer)
+    device = XRT.device(index)
+    bdf = device.bdf
+    bdf === nothing && error("Device $(index) does not report a BDF, so it cannot be reset")
+
     @warn "Deallocating devices. This function call can kill the Julia instance!"
-    reset_active_device = false
-    if (XRT.device().index == index)
-        reset_active_device = true
+    reset_active_device = XRT.device().index == index
+    if reset_active_device
         _XRTInternal.state[].device = nothing
     end
-
-    bdf = XRT.device(index).bdf
     _XRTInternal.state[].available_devices[index] = nothing
 
     GC.gc()
 
-    res = _XRTInternal.call_utility("xbutil", "reset", "-d", "$(bdf)", "--force")
+    res = try
+        _XRTInternal.call_utility("xbutil", "reset", "-d", "$(bdf)", "--force")
+    catch
+        # Leaving the slot empty would break every later device lookup.
+        _XRTInternal.state[].available_devices[index] = device
+        reset_active_device && (_XRTInternal.state[].device = device)
+        rethrow()
+    end
     @info "$(res)"
 
     sleep(0.5)

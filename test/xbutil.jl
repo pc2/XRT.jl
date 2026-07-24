@@ -1,6 +1,9 @@
 @testset "Version" begin
     @test occursin("$(XRT.XRTWrap.XRT_VERSION_MAJOR).$(XRT.XRTWrap.XRT_VERSION_MINOR)", XRT.version())
+end
 
+@testset "Reset" begin
+    @test typeof(XRT.reset!(1)) == XRT.XilinxDevice
 end
 
 @xclbin_testset "Program" begin

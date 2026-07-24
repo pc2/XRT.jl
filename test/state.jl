@@ -1,4 +1,12 @@
 @testset "Internal" begin
+    @testset "XilinxDeviceArray holes" begin
+        a = XRT._XRTInternal.XilinxDeviceArray()
+        @test a[1] === nothing
+        # reset! empties a slot while it runs; lookups must not trip over it
+        push!(a.devices, nothing)
+        @test a[1] === nothing
+    end
+
     @devices_testset 1 "XilinxDeviceArray" begin
         a = XRT._XRTInternal.XilinxDeviceArray()
         @test size(a.devices, 1) == 0

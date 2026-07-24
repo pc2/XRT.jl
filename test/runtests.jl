@@ -21,14 +21,31 @@ const verbose = "--verbose" in ARGS
 
 @testset verbose=verbose "XRT.jl" begin
 
+    # Reaches the XRT command-line tools, which needs no device.
+    @testset "Version" begin
+        @test occursin("$(XRT.XRTWrap.XRT_VERSION_MAJOR).$(XRT.XRTWrap.XRT_VERSION_MINOR)", XRT.version())
+    end
+
+    # reset/validate address a device by BDF, and on an NPU xrt-smi has neither.
     if XRT.emulation_mode() == XRT.XRTWrap.TargetType.hw
-        @devices_testset 1 "Xbutil" begin
-            include("xbutil.jl")
+        if any(device -> device.bdf === nothing, XRT.devices())
+            @warn "Not every device reports a BDF\nSkipping testset"
+        elseif is_npu()
+            @warn "xbutil reset/validate are not available on an NPU\nSkipping testset"
+        else
+            @devices_testset 1 "Xbutil" begin
+                include("xbutil.jl")
+            end
         end
     end
-    
-    @devices_testset 1 "BOArray" begin
-        include("boarray.jl")
+
+    # BOArray allocates NORMAL buffer objects, which an NPU rejects (ENOTSUP).
+    if is_npu()
+        @warn "BOArray uses NORMAL buffer objects, unsupported on an NPU\nSkipping testset"
+    else
+        @devices_testset 1 "BOArray" begin
+            include("boarray.jl")
+        end
     end
 
     @testset "State" begin

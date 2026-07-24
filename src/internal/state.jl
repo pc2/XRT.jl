@@ -25,6 +25,7 @@ function Base.getindex(arr::_XRTInternal.XilinxDeviceArray, index::Integer)
         end
     else 
         for d in arr.devices
+            d === nothing && continue
             if d.index == index
                 return d
             end

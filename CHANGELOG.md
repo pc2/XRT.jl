@@ -11,6 +11,9 @@
   compiles `libxrtwrap` against it as before
 - Support XRT >= 2.19, whose command-line tool is `xrt-smi` rather than `xbutil`
 - Tolerate devices that do not report a BDF or name, such as an NPU
+- Wrap the AIE launch path: `register_xclbin`, `xrt::hw_context`, constructing a `Kernel`
+  by name on a context, and passing a buffer object to `set_arg!` directly. `hw_context`
+  registers an xclbin and opens a context on it
 
 ## v0.2.2
 

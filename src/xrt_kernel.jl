@@ -1,5 +1,19 @@
-import .XRTWrap: Kernel, Run, BO, group_id, offset, get_name, set_arg!, wait, start
+import .XRTWrap: Kernel, Run, BO, HwContext, group_id, offset, get_name, set_arg!, wait, start
 using .XRTWrap.ComputeUnitAccessMode: SHARED, EXCLUSIVE, NONE
+
+"""
+$(TYPEDSIGNATURES)
+
+Register `xclbin` with `device` and open a hardware context on it, returning the context
+and the xclbin's uuid.
+
+This is how an AIE device (an NPU) loads a design; [`load_xclbin!`](@ref) is the path for
+Alveo cards. Pass the context to [`Kernel`](@ref) to address a kernel by name.
+"""
+function hw_context(xclbin::Xclbin; device::XilinxDevice=device())
+    uuid = XRTWrap.register_xclbin(device.device, xclbin.xclbin)
+    return HwContext(device.device, uuid), uuid
+end
 
 """
 ```Julia
@@ -88,11 +102,8 @@ function set_arg!(run::Run, index, val)
     set_arg!(run, index, Base.unsafe_convert(Ptr{Nothing},val_array), sizeof(eltype(val)))
 end
 
-function set_arg!(run::Run, index, val::BO)
-    adr = address(val)
-    set_arg!(run, index, adr)
-end 
-
+# A BO argument goes through the wrapper's own set_arg! overload, which passes the buffer
+# object rather than its address: the AIE path needs the object.
 function set_arg!(run::Run, index, val::AbstractBOArray)
     set_arg!(run, index, val.bo)
 end

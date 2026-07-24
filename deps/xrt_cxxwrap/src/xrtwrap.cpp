@@ -24,6 +24,7 @@
 #endif
 #include "xrt/xrt_bo.h"
 #include "xrt/xrt_device.h"
+#include "xrt/xrt_hw_context.h"
 #include "xrt/xrt_kernel.h"
 
 enum class not_implemented : uint8_t { not_implemented = 0 };
@@ -187,10 +188,23 @@ JLCXX_MODULE define_module_xrtwrap(jlcxx::Module& mod) {
         xclbin.method("get_interface_uuid", [](xrt::xclbin& x) -> void {});
     #endif
 
+    // Registering an xclbin and running it through a hardware context is how the AIE
+    // (NPU) path loads a design; load_xclbin! is the Alveo one. Registered as a free
+    // function because xrt::device is added above, before xrt::xclbin exists.
+    mod.method("register_xclbin",
+               [](xrt::device& d, const xrt::xclbin& x) { return d.register_xclbin(x); });
+
+    // Hardware context
+    mod.add_type<xrt::hw_context>("HwContext")
+        .constructor<const xrt::device&, const xrt::uuid&>()
+        .method("get_device", &xrt::hw_context::get_device)
+        .method("get_xclbin_uuid", &xrt::hw_context::get_xclbin_uuid);
+
     // Kernel
     mod.add_type<xrt::kernel>("Kernel")
         .constructor<const xrt::device&, const xrt::uuid&, const std::string&,
                      xrt::kernel::cu_access_mode>()
+        .constructor<const xrt::hw_context&, const std::string&>()
         .method("group_id", &xrt::kernel::group_id)
         .method("offset", &xrt::kernel::offset)
         .method("get_name", &xrt::kernel::get_name)
@@ -209,9 +223,10 @@ JLCXX_MODULE define_module_xrtwrap(jlcxx::Module& mod) {
         .method("wait",
                 static_cast<ert_cmd_state (xrt::run::*)(unsigned int) const>(
                     &xrt::run::wait))
-        // .method("set_arg!", static_cast<void (xrt::run::*)(int,
-        // xrt::bo&)>(&xrt::run::set_arg)) .method("set_arg!", static_cast<void
-        // (xrt::run::*)(int,const xrt::bo&)>(&xrt::run::set_arg))
+        // The AIE path passes buffer objects themselves rather than their addresses.
+        .method("set_arg!",
+                static_cast<void (xrt::run::*)(int, const xrt::bo&)>(
+                    &xrt::run::set_arg))
         .method("set_arg!",
                 static_cast<void (xrt::run::*)(int, const void*, size_t)>(
                     &xrt::run::set_arg))

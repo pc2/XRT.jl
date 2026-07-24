@@ -97,13 +97,15 @@ Set the argument for a kernel at the given index.
 Note, that this is a thin wrapper to the C++ API,
 so the indices start at 0!
 """
-function set_arg!(run::Run, index, val)
+# A buffer object argument goes to the wrapper's own set_arg!(::Run, ::Integer, ::BO)
+# overload, which passes the object itself rather than its address, as the AIE path needs.
+# This scalar fallback matches that overload's `run` type (Run or a CxxRef to one) so it is
+# not more specific there; the buffer overload then wins outright for a buffer object.
+function set_arg!(run::Union{Run, XRTWrap.CxxWrap.CxxWrapCore.CxxRef{<:Run}}, index, val)
     val_array = [val]
     set_arg!(run, index, Base.unsafe_convert(Ptr{Nothing},val_array), sizeof(eltype(val)))
 end
 
-# A BO argument goes through the wrapper's own set_arg! overload, which passes the buffer
-# object rather than its address: the AIE path needs the object.
 function set_arg!(run::Run, index, val::AbstractBOArray)
     set_arg!(run, index, val.bo)
 end

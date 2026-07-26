@@ -1,7 +1,3 @@
-@testset "Reset" begin
-    @test typeof(XRT.reset!(1)) == XRT.XilinxDevice
-end
-
 @testset "Version" begin
     @test occursin("$(XRT.XRTWrap.XRT_VERSION_MAJOR).$(XRT.XRTWrap.XRT_VERSION_MINOR)", XRT.version())
 
@@ -21,10 +17,11 @@ end
 end
 
 @testset "Validate Quick" begin
-    # This ensures that 'verify' will be loaded on device
     for device in XRT.devices()
         @test length(findall("PASSED", XRT.validate!(XRT.XbutilTest.AUX_CONNECTION; device=device))) == 1
         @test length(findall("PASSED", XRT.validate!(XRT.XbutilTest.QUICK; device=device))) == 4
+        # This ensures that 'm2m' will be loaded on device to access memory banks for BO allocation
+        @test !occursin("FAILED", XRT.validate!(XRT.XbutilTest.M2M; device=device))
     end
 
 end

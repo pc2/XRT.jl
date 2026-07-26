@@ -4,6 +4,7 @@
 
 - Fixes in xrt_cxxwrap for XRT +2.20 and Windows
 - Support Julia >= v1.12
+- Fixes BO allocation in tests failing
 
 ## v0.2.2
 

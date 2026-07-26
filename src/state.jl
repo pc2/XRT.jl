@@ -61,7 +61,7 @@ function versioninfo(io::IO=stdout)
         println(io, "--- An error occurred while loading XRT ---")
     end
     print(io, "Xilinx Runtime library $(XRT.XRTWrap.XRT_VERSION_MAJOR).$(XRT.XRTWrap.XRT_VERSION_MINOR), ")
-    if XRTWrap.native_xrt() === nothing
+    if native_xrt() === nothing
         println(io, "built-in installation")
     else
         println(io, "native installation")

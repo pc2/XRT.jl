@@ -4,29 +4,17 @@ using Reexport
 using LazyJSON
 using DocStringExtensions
 using PkgVersion
-import Preferences
+using Preferences
 
 @reexport using ArrayAllocators 
 
-module XRTWrap
-
-using CxxWrap
-using Preferences
-using Scratch
-using Logging
-import ..Base: size, length, read, convert, wait
-
-get_version(version_output) = VersionNumber(match(r"Version\s+:\s+(\d+\.\d+\.\d+)", version_output)[1])
-
 # An XILINX_XRT pointing into a depot is the xrt_jll artifact, not a native installation.
 resolve_native(path) =
-    isempty(path) || any(depot -> occursin(depot, path), DEPOT_PATH) ? nothing : path
+    isempty(path) || any(depot -> startswith(path, joinpath(depot, "artifacts")), DEPOT_PATH) ? nothing : path
 
 # XILINX_XRT overrides the preference, so unsetting it goes back to whatever was chosen
 # with use_native_xrt.
-selected_xrt() = get(ENV, "XILINX_XRT") do
-    @load_preference("xrt_path", "")
-end
+selected_xrt() = @load_preference("xrt_path", get(ENV, "XILINX_XRT", ""))
 
 # Mirrors the selection so that the precompilation cache tracks it. Julia keys the cache
 # on preferences but not on the environment, and this is never read to choose anything.
@@ -42,9 +30,20 @@ const NATIVE_XRT = resolve_native(selected_xrt())
 
 native_xrt() = NATIVE_XRT
 
+module XRTWrap
+
+import ..XRT
+using CxxWrap
+using Preferences
+using Scratch
+using Logging
+import ..Base: size, length, read, convert, wait
+
+get_version(version_output) = VersionNumber(match(r"Version\s+:\s+(\d+\.\d+\.\d+)", version_output)[1])
+
 # Loading these dlopens their XRT libraries, which would then satisfy libxrtwrap's
 # DT_NEEDED and shadow a native installation, so only load them when we use them.
-@static if NATIVE_XRT === nothing
+@static if XRT.NATIVE_XRT === nothing
     import xrt_jll
     import xrt_cxxwrap_jll
 end
@@ -66,7 +65,7 @@ function libpath()
             startswith(basename(file), "libxrtwrap.") && return file
         end
     end
-    error("""No libxrtwrap has been built against the native XRT in $(NATIVE_XRT). Run \
+    error("""No libxrtwrap has been built against the native XRT in $(XRT.NATIVE_XRT). Run \
              `Pkg.build("XRT")`, or drop `xrt_path` from LocalPreferences.toml (and unset \
              XILINX_XRT) to fall back to xrt_jll.""")
 end
@@ -251,26 +250,6 @@ function __init__()
     catch ignore
         _functional[] = false
     end
-
-    # Julia keys the precompilation cache on preferences but not on the environment, so
-    # record what XILINX_XRT selected: that invalidates the cache, and the next start
-    # rebuilds against it. Recompiling here instead would crash, the C++ module being
-    # loaded already.
-    current = resolve_native(selected_xrt())
-    if current != NATIVE_XRT
-        try
-            Preferences.set_preferences!(@__MODULE__,
-                                         "xrt_compiled_for" => something(current, "");
-                                         force=true)
-            @warn """XILINX_XRT has changed since XRT.jl was precompiled. Restart Julia to \
-                     rebuild against it."""
-        catch err
-            fix = current === nothing ? "XRT.use_jll_xrt()" : "XRT.use_native_xrt(\"$(current)\")"
-            @warn """XILINX_XRT has changed since XRT.jl was precompiled, and the \
-                     precompilation cache could not be invalidated. Run `$(fix)` and \
-                     restart Julia.""" exception = err
-        end
-    end
 end
 
 end # XRTWrap
@@ -290,6 +269,26 @@ include("xrt_uuid.jl")
 include("xrt_ip.jl")
 
 function __init__()
+    # Julia keys the precompilation cache on preferences but not on the environment, so
+    # record what XILINX_XRT selected: that invalidates the cache, and the next start
+    # rebuilds against it. Recompiling here instead would crash, the C++ module being
+    # loaded already.
+    current = resolve_native(selected_xrt())
+    if current != NATIVE_XRT
+        try
+            Preferences.set_preferences!(@__MODULE__,
+                                         "xrt_compiled_for" => something(current, "");
+                                         force=true)
+            @warn """XILINX_XRT has changed since XRT.jl was precompiled. Restart Julia to \
+                     rebuild against it."""
+        catch err
+            fix = current === nothing ? "XRT.use_jll_xrt()" : "XRT.use_native_xrt(\"$(current)\")"
+            @warn """XILINX_XRT has changed since XRT.jl was precompiled, and the \
+                     precompilation cache could not be invalidated. Run `$(fix)` and \
+                     restart Julia.""" exception = err
+        end
+    end
+
     shim_version = VersionNumber(XRTWrap.XRT_VERSION_MAJOR, XRTWrap.XRT_VERSION_MINOR)
     xrt_version = try
         XRTWrap.get_version(version())
@@ -344,7 +343,7 @@ $(SIGNATURES)
 Use the `xrt_jll` artifact, undoing [`use_native_xrt`](@ref). Restart Julia afterwards.
 """
 function use_jll_xrt()
-    Preferences.delete_preferences!(XRT, "xrt_path"; force=true)
+    Preferences.set_preferences!(XRT, "xrt_path" => ""; force=true)
     @info "Selected the xrt_jll artifact. Restart Julia for it to take effect."
 end
 

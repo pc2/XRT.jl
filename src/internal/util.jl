@@ -9,7 +9,7 @@ const UTILITY_ALIASES = Dict("xbutil" => ("xrt-smi", "xbutil"))
 
 function utility_cmd(name::AbstractString)
     candidates = get(UTILITY_ALIASES, name, (name,))
-    native = XRTWrap.native_xrt()
+    native = XRT.native_xrt()
     if native !== nothing
         for candidate in candidates
             path = joinpath(native, "bin", candidate)

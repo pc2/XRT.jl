@@ -279,7 +279,8 @@ function __init__()
             Preferences.set_preferences!(@__MODULE__,
                                          "xrt_compiled_for" => something(current, "");
                                          force=true)
-            @warn """XILINX_XRT has changed since XRT.jl was precompiled. Restart Julia to \
+            rebuild = current === nothing ? "" : "and run `Pkg.build(\"XRT\")` "
+            @warn """XILINX_XRT has changed since XRT.jl was precompiled. Restart Julia $(rebuild)to \
                      rebuild against it."""
         catch err
             fix = current === nothing ? "XRT.use_jll_xrt()" : "XRT.use_native_xrt(\"$(current)\")"

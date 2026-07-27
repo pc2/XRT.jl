@@ -9,6 +9,8 @@ and the xclbin's uuid.
 
 This is how an AIE device (an NPU) loads a design; [`load_xclbin!`](@ref) is the path for
 Alveo cards. Pass the context to [`Kernel`](@ref) to address a kernel by name.
+
+Requires XRT 2.15 or newer, which is where `xrt::hw_context` first became available.
 """
 function hw_context(xclbin::Xclbin; device::XilinxDevice=device())
     uuid = XRTWrap.register_xclbin(device.device, xclbin.xclbin)

@@ -2,6 +2,22 @@ import .XRTWrap: Kernel, Run, BO, group_id, offset, get_name, set_arg!, wait, st
 using .XRTWrap.ComputeUnitAccessMode: SHARED, EXCLUSIVE, NONE
 
 """
+$(TYPEDSIGNATURES)
+
+Register `xclbin` with `device` and open a hardware context on it, returning the context
+and the xclbin's uuid.
+
+This is how an AIE device (an NPU) loads a design; [`load_xclbin!`](@ref) is the path for
+Alveo cards. Pass the context to [`Kernel`](@ref) to address a kernel by name.
+
+Requires XRT 2.15 or newer, which is where `xrt::hw_context` first became available.
+"""
+function hw_context(xclbin::Xclbin; device::XilinxDevice=device())
+    uuid = XRTWrap.register_xclbin(device.device, xclbin.xclbin)
+    return XRTWrap.HwContext(device.device, uuid), uuid
+end
+
+"""
 ```Julia
 Kernel(uuid::XRT.XRTWrap.UUID, name::AbstractString; device::XilinxDevice=device())
 Kernel(uuid::XRT.XRTWrap.UUID, name::AbstractString, cus::Vararg{AbstractString}; device::XilinxDevice=device())
@@ -83,15 +99,14 @@ Set the argument for a kernel at the given index.
 Note, that this is a thin wrapper to the C++ API,
 so the indices start at 0!
 """
-function set_arg!(run::Run, index, val)
+# A buffer object argument goes to the wrapper's own set_arg!(::Run, ::Integer, ::BO)
+# overload, which passes the object itself rather than its address, as the AIE path needs.
+# This scalar fallback matches that overload's `run` type (Run or a CxxRef to one) so it is
+# not more specific there; the buffer overload then wins outright for a buffer object.
+function set_arg!(run::Union{Run, XRTWrap.CxxWrap.CxxWrapCore.CxxRef{<:Run}}, index, val)
     val_array = [val]
     set_arg!(run, index, Base.unsafe_convert(Ptr{Nothing},val_array), sizeof(eltype(val)))
 end
-
-function set_arg!(run::Run, index, val::BO)
-    adr = address(val)
-    set_arg!(run, index, adr)
-end 
 
 function set_arg!(run::Run, index, val::AbstractBOArray)
     set_arg!(run, index, val.bo)

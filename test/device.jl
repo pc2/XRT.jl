@@ -31,9 +31,9 @@ end
 @devices_testset 1 "Public" begin
     xd1 = XRT.device(1)
 
-    @test typeof(xd1.max_clock_frequency_mhz) == UInt64
+    @test xd1.max_clock_frequency_mhz === nothing || typeof(xd1.max_clock_frequency_mhz) == UInt64
     @test typeof(xd1.name) <: AbstractString
-    @test typeof(xd1.nodma) == Bool
+    @test xd1.nodma === nothing || typeof(xd1.nodma) == Bool
     @test typeof(xd1.electrical.electrical) <: LazyJSON.Object
 
     uuid = XRT.get_xclbin_uuid(; device=xd1)

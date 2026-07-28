@@ -145,7 +145,11 @@ end
 
 end # _XRTDeviceInformation
 
-Base.string(device::XilinxDevice) = "[$(device.bdf)] : $(device.name)"
+function Base.string(device::XilinxDevice)
+    bdf, name = device.bdf, device.name
+    bdf === nothing && name === nothing && return "device $(device.index)"
+    return "[$(something(bdf, "device $(device.index)"))] : $(something(name, "unknown"))"
+end
 
 Base.show(io::IO, device::XRT.XilinxDevice) = print(io, string(device))
 

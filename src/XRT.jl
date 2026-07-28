@@ -4,36 +4,70 @@ using Reexport
 using LazyJSON
 using DocStringExtensions
 using PkgVersion
+using Preferences
 
 @reexport using ArrayAllocators 
 
+# An XILINX_XRT pointing into a depot is the xrt_jll artifact, not a native installation.
+resolve_native(path) =
+    isempty(path) || any(depot -> startswith(path, joinpath(depot, "artifacts")), DEPOT_PATH) ? nothing : path
+
+# XILINX_XRT overrides the preference, so unsetting it goes back to whatever was chosen
+# with use_native_xrt.
+selected_xrt() = @load_preference("xrt_path", get(ENV, "XILINX_XRT", ""))
+
+# Mirrors the selection so that the precompilation cache tracks it. Julia keys the cache
+# on preferences but not on the environment, and this is never read to choose anything.
+const COMPILED_FOR = @load_preference("xrt_compiled_for", "")
+
+"""
+Path of the native XRT installation in use, or `nothing` when `xrt_jll` is used.
+
+Chosen when XRT.jl is precompiled, from the `xrt_path` preference
+([`XRT.use_native_xrt`](@ref)) or the `XILINX_XRT` environment variable.
+"""
+const NATIVE_XRT = resolve_native(selected_xrt())
+
+native_xrt() = NATIVE_XRT
+
 module XRTWrap
 
+import ..XRT
 using CxxWrap
+using Preferences
 using Scratch
 using Logging
 import ..Base: size, length, read, convert, wait
 
-get_version(xbutil_version) = VersionNumber(match(r"Version\s+:\s+(\d+\.\d+\.\d+)", xbutil_version)[1])
-xbutil_version = VersionNumber("1")
+get_version(version_output) = VersionNumber(match(r"Version\s+:\s+(\d+\.\d+\.\d+)", version_output)[1])
 
-if !(haskey(ENV, "XILINX_XRT"))
-    @info "Use xrt_jll artifacts"
-    using xrt_jll
-    ENV["XILINX_XRT"] = xrt_jll.artifact_dir
-    xbutil_version = get_version(read(`$(xrt_jll.xbutil()) --version`, String))
-else
-    @info "Use native XRT libraries in $(ENV["XILINX_XRT"])"
-    xbutil_version = get_version(read(`xbutil --version`, String))
+# Loading these dlopens their XRT libraries, which would then satisfy libxrtwrap's
+# DT_NEEDED and shadow a native installation, so only load them when we use them.
+@static if XRT.NATIVE_XRT === nothing
+    import xrt_jll
+    import xrt_cxxwrap_jll
 end
 
-libname() = "libxrtwrap.so.$(xbutil_version.major).$(xbutil_version.minor)"
-libpath = joinpath(@get_scratch!("xrtwrap"), "lib", libname())
+"""
+Path of the `libxrtwrap` CxxWrap shim. `xrt_cxxwrap_jll` ships one built against
+`xrt_jll`; a native XRT needs one built against its own headers, which `Pkg.build("XRT")`
+puts in the scratch space. `JULIA_XRTWRAP_LIBRARY` overrides both.
+"""
+function libpath()
+    override = get(ENV, "JULIA_XRTWRAP_LIBRARY", "")
+    isempty(override) || return override
+    isdefined(@__MODULE__, :xrt_cxxwrap_jll) && return xrt_cxxwrap_jll.libxrtwrap
 
-if !isfile(libpath)
-    @info "No shared object library v$(xbutil_version.major).$(xbutil_version.minor) found. Building..."
-    include("../deps/build.jl")
-    @info "Done"
+    scratch = @get_scratch!("xrtwrap")
+    for dir in (joinpath(scratch, "lib"), joinpath(scratch, "bin"))
+        isdir(dir) || continue
+        for file in readdir(dir; join=true)
+            startswith(basename(file), "libxrtwrap.") && return file
+        end
+    end
+    error("""No libxrtwrap has been built against the native XRT in $(XRT.NATIVE_XRT). Run \
+             `Pkg.build("XRT")`, or drop `xrt_path` from LocalPreferences.toml (and unset \
+             XILINX_XRT) to fall back to xrt_jll.""")
 end
 
 const _functional = Ref{Bool}(true)
@@ -41,7 +75,7 @@ const _functional = Ref{Bool}(true)
 module DeviceInformationParameters
     using ..XRTWrap
     using CxxWrap
-    @wrapmodule(() -> XRTWrap.libpath, :define_module_device_info_params)
+    @wrapmodule(XRTWrap.libpath, :define_module_device_info_params)
 
     function __init__()
         try
@@ -55,7 +89,7 @@ end # DeviceInformationParameters
 module BOFlags
     using ..XRTWrap
     using CxxWrap
-    @wrapmodule(() -> XRTWrap.libpath, :define_module_bo_flags)
+    @wrapmodule(XRTWrap.libpath, :define_module_bo_flags)
 
     function __init__()
         try
@@ -69,7 +103,7 @@ end # BOFlags
 module ErtCmdState
     using ..XRTWrap
     using CxxWrap
-    @wrapmodule(() -> XRTWrap.libpath, :define_module_ert_cmd_state)
+    @wrapmodule(XRTWrap.libpath, :define_module_ert_cmd_state)
 
     function __init__()
         try
@@ -83,7 +117,7 @@ end # ErtCmdState
 module BOSyncDirection
     using ..XRTWrap
     using CxxWrap
-    @wrapmodule(() -> XRTWrap.libpath, :define_module_xcl_bo_sync_direction)
+    @wrapmodule(XRTWrap.libpath, :define_module_xcl_bo_sync_direction)
 
     function __init__()
         try
@@ -97,7 +131,7 @@ end # BOSyncDirection
 module CVStatus
     using ..XRTWrap
     using CxxWrap
-    @wrapmodule(() -> XRTWrap.libpath, :define_module_cv_status)
+    @wrapmodule(XRTWrap.libpath, :define_module_cv_status)
 
     function __init__()
         try
@@ -111,7 +145,7 @@ end # CVStatus
 module ComputeUnitAccessMode
     using ..XRTWrap
     using CxxWrap
-    @wrapmodule(() -> XRTWrap.libpath, :define_module_cu_access_mode)
+    @wrapmodule(XRTWrap.libpath, :define_module_cu_access_mode)
 
     function __init__()
         try
@@ -125,7 +159,7 @@ end # ComputeUnitAccessMode
 module TargetType
     using ..XRTWrap
     using CxxWrap
-    @wrapmodule(() -> XRTWrap.libpath, :define_module_target_type)
+    @wrapmodule(XRTWrap.libpath, :define_module_target_type)
 
     function __init__()
         try
@@ -139,7 +173,7 @@ end # TargetType
 module ControlType
     using ..XRTWrap
     using CxxWrap
-    @wrapmodule(() -> XRTWrap.libpath, :define_module_control_type)
+    @wrapmodule(XRTWrap.libpath, :define_module_control_type)
 
     function __init__()
         try
@@ -153,7 +187,7 @@ end # ControlType
 module MemoryType
     using ..XRTWrap
     using CxxWrap
-    @wrapmodule(() -> XRTWrap.libpath, :define_module_memory_type)
+    @wrapmodule(XRTWrap.libpath, :define_module_memory_type)
 
     function __init__()
         try
@@ -167,7 +201,7 @@ end # MemoryType
 module KernelType
     using ..XRTWrap
     using CxxWrap
-    @wrapmodule(() -> XRTWrap.libpath, :define_module_kernel_type)
+    @wrapmodule(XRTWrap.libpath, :define_module_kernel_type)
 
     function __init__()
         try
@@ -181,7 +215,7 @@ end  # KernelType
 module IPType
     using ..XRTWrap
     using CxxWrap
-    @wrapmodule(() -> XRTWrap.libpath, :define_module_ip_type)
+    @wrapmodule(XRTWrap.libpath, :define_module_ip_type)
 
     function __init__()
         try
@@ -195,7 +229,7 @@ end # IPType
 module LogLevel
     using ..XRTWrap
     using CxxWrap
-    @wrapmodule(() -> XRTWrap.libpath, :define_module_verbosity_level)
+    @wrapmodule(XRTWrap.libpath, :define_module_verbosity_level)
 
     function __init__()
         try
@@ -206,32 +240,15 @@ module LogLevel
     end
 end # LogLevel
 
-@wrapmodule(() -> libpath, :define_module_xrtwrap)
+@wrapmodule(libpath, :define_module_xrtwrap)
 
 function __init__()
+    # Always initialize: the rest of the package calls into the C++ module either way,
+    # and skipping this leaves its function pointers null.
     try
         @initcxx
     catch ignore
         _functional[] = false
-    end
-
-    if haskey(ENV, "XILINX_XRT")
-        if isdefined(XRTWrap, :xrt_jll) || any(path -> occursin(path, ENV["XILINX_XRT"]), DEPOT_PATH)
-            @info "XRT.jl precompiled with xrt_jll, but XILINX_XRT is set. Recompiling..."
-            Base.compilecache(Base.identify_package("XRT"))
-            @warn "Recompiling Done. Please restart Julia to load the new version."
-        else
-            @info "Using native XRT libraries in $(ENV["XILINX_XRT"])"
-        end
-    else
-        if isdefined(XRTWrap, :xrt_jll)
-            @info "Using xrt_jll artifacts"
-            ENV["XILINX_XRT"] = xrt_jll.artifact_dir
-        else
-            @info "XRT.jl not precompiled with xrt_jll. Recompiling..."
-            Base.compilecache(Base.identify_package("XRT"))
-            @info "Recompiling Done. Please restart Julia to load the new version."
-        end
     end
 end
 
@@ -252,12 +269,39 @@ include("xrt_uuid.jl")
 include("xrt_ip.jl")
 
 function __init__()
-    xrt_version = XRTWrap.get_version(version())
+    # Julia keys the precompilation cache on preferences but not on the environment, so
+    # record what XILINX_XRT selected: that invalidates the cache, and the next start
+    # rebuilds against it. Recompiling here instead would crash, the C++ module being
+    # loaded already.
+    current = resolve_native(selected_xrt())
+    if current != NATIVE_XRT
+        try
+            Preferences.set_preferences!(@__MODULE__,
+                                         "xrt_compiled_for" => something(current, "");
+                                         force=true)
+            rebuild = current === nothing ? "" : "and run `Pkg.build(\"XRT\")` "
+            @warn """XILINX_XRT has changed since XRT.jl was precompiled. Restart Julia $(rebuild)to \
+                     rebuild against it."""
+        catch err
+            fix = current === nothing ? "XRT.use_jll_xrt()" : "XRT.use_native_xrt(\"$(current)\")"
+            @warn """XILINX_XRT has changed since XRT.jl was precompiled, and the \
+                     precompilation cache could not be invalidated. Run `$(fix)` and \
+                     restart Julia.""" exception = err
+        end
+    end
 
-    if xrt_version.major != XRTWrap.XRT_VERSION_MAJOR || xrt_version.minor != XRTWrap.XRT_VERSION_MINOR
-        @info "Version libxrtwrap.so.$(XRTWrap.XRT_VERSION_MAJOR).$(XRTWrap.XRT_VERSION_MINOR) loaded, but XRT v$(xrt_version.major).$(xrt_version.minor) found. Recompiling..."
-        Base.compilecache(Base.identify_package("XRT"))
-        @warn "Recompiling Done. Please restart Julia to load the new version."
+    shim_version = VersionNumber(XRTWrap.XRT_VERSION_MAJOR, XRTWrap.XRT_VERSION_MINOR)
+    xrt_version = try
+        XRTWrap.get_version(version())
+    catch
+        nothing
+    end
+
+    if xrt_version !== nothing &&
+       (xrt_version.major != shim_version.major || xrt_version.minor != shim_version.minor)
+        @warn """libxrtwrap is built against XRT v$(shim_version), but XRT \
+                 v$(xrt_version.major).$(xrt_version.minor) is installed. For a native \
+                 installation, run `Pkg.build("XRT")` to rebuild it."""
     end
 
     if haskey(ENV, "XRT_INI_PATH")
@@ -273,9 +317,35 @@ function __init__()
         end
     else
         error("An error occured while initializing XRT.\n
-        Maybe XRT v$(xrt_version.major).$(xrt_version.minor) does not support features of the currently loaded libxrtwrap.so.$(XRTWrap.XRT_VERSION_MAJOR).$(XRTWrap.XRT_VERSION_MINOR) version.\n
+        Maybe the installed XRT does not support features of the currently loaded libxrtwrap v$(shim_version) version.\n
         Calling an XRTWrap function causes the Julia kernel to crash.")
     end
+end
+
+"""
+$(SIGNATURES)
+
+Use the native XRT installation at `path` instead of the `xrt_jll` artifact.
+
+The choice is stored as a preference, so it survives restarts and invalidates the
+precompilation cache. Run `Pkg.build("XRT")` afterwards to build `libxrtwrap` against that
+installation, then restart Julia. Setting `XILINX_XRT` does the same thing for one session.
+"""
+function use_native_xrt(path::AbstractString)
+    isdir(path) || error("Not a directory: $(path)")
+    Preferences.set_preferences!(XRT, "xrt_path" => abspath(path); force=true)
+    @info """Selected the native XRT in $(abspath(path)). Run `Pkg.build("XRT")` to build \
+             libxrtwrap against it, then restart Julia."""
+end
+
+"""
+$(SIGNATURES)
+
+Use the `xrt_jll` artifact, undoing [`use_native_xrt`](@ref). Restart Julia afterwards.
+"""
+function use_jll_xrt()
+    Preferences.set_preferences!(XRT, "xrt_path" => ""; force=true)
+    @info "Selected the xrt_jll artifact. Restart Julia for it to take effect."
 end
 
 export size, length, setindex!, getindex, wait

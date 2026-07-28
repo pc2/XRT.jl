@@ -32,14 +32,16 @@ native_xrt = Preferences.load_preference(uuid, "xrt_path", get(ENV, "XILINX_XRT"
 if isempty(native_xrt) || any(depot -> occursin(depot, native_xrt), DEPOT_PATH)
     @info "XILINX_XRT does not point at a native XRT installation; using xrt_cxxwrap_jll"
 else
-    isdir(build_dir()) && rm(build_dir(), force=true, recursive=true)
+    rm(build_dir(), force=true, recursive=true)
+    dest_dir = get_scratch!(uuid, "xrtwrap")
+    rm(joinpath(dest_dir, "lib"); force=true, recursive=true)
 
     @info "Build using native XRT at $(native_xrt)"
     version = xrt_version(native_xrt)
     cmake_opts = ["-DXILINX_XRT=$(native_xrt)",
                   "-DLIB_UUID_DIR=$(Libuuid_jll.artifact_dir)",
                   "-DLIB_BOOST_DIR=$(boost_jll.artifact_dir)",
-                  "-DCMAKE_INSTALL_PREFIX=$(get_scratch!(uuid, "xrtwrap"))",
+                  "-DCMAKE_INSTALL_PREFIX=$(dest_dir)",
                   "-DXRT_VERSION_NUMBER=$(version.major).$(version.minor)"]
 
     mkdir(build_dir())

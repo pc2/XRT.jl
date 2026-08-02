@@ -3,11 +3,7 @@
 **Note: Only Linux and Windows x86_64 systems are supported!**
 
 The Julia XRT.jl package requires a functional installation of the XRT software stack.
-However, a native installation of XRT is not necessary, as a built-in XRT installation is available in the `xrt_jll` package in version 2.17 (and 2.16). 
-
-The following dependencies have to be installed to use XRT.jl:
-
-- [Xilinx Vitis](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vitis.html) versions from 22.2 onwards for features like software or hardware emulation
+However, a native installation of XRT is not necessary, as a built-in XRT installation is available in the `xrt_jll` package in version 2.26 (and 2.17).
 
 ## Package installation
 
@@ -25,31 +21,21 @@ julia> using Pkg; Pkg.add("XRT")
 
 Building the package can take some time, as the C++ library gets wrapped and a shared object file is generated during the building process.
 
-## Using `xrt_jll` v2.16
+## Switching `xrt_jll` version
 
-**Note: Linux only! Windows x86_64 is currently untested.**
-
-The artifacts of `xrt_jll` v2.16 are not added to any official registry yet.
-However, it is available in [this](https://github.com/DO6LTM/xrt_jll.jl) repository and can be used in conjunction with XRT.jl.
-Therefore, the following tag of the repository needs to be added to Julia via the package manager and pinned to this version.
+The version of `xrt_jll` can be switched to v2.17.
+Therefore, the following package needs to be added to Julia via the package manager and pinned to this version.
 
 ```
-pkg> add https://github.com/DO6LTM/xrt_jll.jl#xrt-v2.16.0+0
+pkg> free xrt_jll
+
+pkg> add xrt_jll@[2.17|2.26]
 
 pkg> pin xrt_jll
 ```
 
-It could lead to some errors as Boost is required in version 1.79.0:
+Finally, restart Julia to use with XRT new `xrt_jll` version.
 
-```
-pkg> add boost_jll@1.79.0
-
-pkg> pin boost_jll
-```
-
-Finally, restart Julia to use with XRT v2.16.
-
-> Some features such as using software emulation or running built-in tests using `xbutil validate` are still faulty. Calling `Pkg.test("XRT")` will therefore fail.
 
 ## Use native XRT installation
 
@@ -96,7 +82,8 @@ Environment:
   3: xilinx_u280_gen3x16_xdma_base_1, bdf=0000:01:00.1
 ```
 
-> It is possible to build a shared object file for every XRT version used. The files are named `libxrtwrap.so.2.xx` and can be found in the following directory: `.julia/scratchspaces/4d396880-2e3f-4be1-8c36-e87777010d00/xrtwrap/lib/`
+> It is possible to build a shared object file for every XRT version used. The files are named `libxrtwrap.so.2.xx` and can be found in the following directory: `.julia/scratchspaces/4d396880-2e3f-4be1-8c36-e87777010d00/xrtwrap/lib/`.
+Versioned shared object files are removed and rebuilt when switching the version of the XRT installation.
 
 ## Emulation mode
 
@@ -109,6 +96,8 @@ export XCL_EMULATION_MODE=sw_emu
 In this case, the list of available devices should always just contain one single `XilinxDevice`.
 So, the selection of an active device by an index always leads to the only available device.
 Additionally, XRT.jl checks whether the Xclbin target type fits the set emulation mode (more on this in the chapter [The `Xclbin` Type](@ref)).
+
+> This feature may only be functioning using a native XRT installation.
 
 ## Usage on HPC cluster
 

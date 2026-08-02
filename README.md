@@ -15,11 +15,9 @@ This wrapper targets the native C++ API to allow kernel scheduling, bitstream an
 
 **Prerequisites** for the use of XRT.jl:
 
-- [Xilinx Vitis](https://www.xilinx.com/support/download.html) for features such as software or hardware emulation
-- XRT is contained in the [`xrt_jll.jl`](https://github.com/JuliaBinaryWrappers/xrt_jll.jl) package in version 2.17.
-A version with XRT v2.16 is available in [this](https://github.com/DO6LTM/xrt_jll.jl) repository.
-Both versions allow the execution of kernels but they are still not fully functional.
-It is therefore recommended to use a native XRT installation.
+- XRT is contained in the [`xrt_jll.jl`](https://github.com/JuliaBinaryWrappers/xrt_jll.jl) package in version 2.26 and 2.17.
+The wrapper is prebuilt in [`xrt_cxxwrap.jl`](https://github.com/JuliaBinaryWrappers/xrt_cxxwrap_jll.jl).
+- Alternatively, a native XRT installation can be used that manually compiles the wrapper files.
 To do so, the environment variable `XILINX_XRT` must be set to the path of the local installation.
 XRT with the native C++ interface +2.14 is supported.
 

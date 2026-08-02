@@ -20,14 +20,11 @@ jobs:
         with:
           version: '1'
       - uses: julia-actions/cache@v2
-      - name: Install dependencies
-        shell: julia --color=yes --project=docs {0}
-        run: |
-          using Pkg
-          Pkg.develop(PackageSpec(path=pwd()))
-          Pkg.instantiate()
       - name: Build and deploy
-        run: julia --color=yes --project=docs docs/make.jl
+        run: |
+          cd docs
+          julia --color=yes --project=. -e 'using Pkg; Pkg.add(url="https://github.com/pc2/DocThemePC2.jl.git"); Pkg.build(verbose=true);'
+          julia --color=yes build_docs.jl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
